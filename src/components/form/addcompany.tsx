@@ -40,6 +40,7 @@ const AddCompanyPage = () => {
             website: data.website,
             pan: data.pan,
             gst: data.gst,
+            is_dealer: false,
             contact_person: data.contact_person,
             contact_person_number: data.contact_person_number,
             designation: data.designation,

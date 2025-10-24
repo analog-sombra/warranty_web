@@ -4,14 +4,15 @@ import React, { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { useMutation } from "@tanstack/react-query";
-import { Button, Typography, message } from "antd";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button, Typography, Spin } from "antd";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
 import { TextInput } from "@/components/form/inputfields/textinput";
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { onFormError } from "@/utils/methods";
 import { object, string, pipe, InferInput } from "valibot";
+import { toast } from "react-toastify";
 
 const { Title } = Typography;
 
@@ -24,12 +25,51 @@ const AddUserSchema = object({
 
 type AddUserForm = InferInput<typeof AddUserSchema>;
 
-// GraphQL mutation
+// Company interface
+interface Company {
+  id: number;
+  name: string;
+  zone: {
+    id: number;
+    name: string;
+    city: {
+      name: string;
+    };
+  };
+}
+
+// GraphQL queries
+const GET_COMPANY_BY_ID = `
+  query GetCompanyById($companyId: Int!) {
+    getCompanyById(id: $companyId) {
+      id
+      name
+      zone {
+        id
+        name
+        city {
+          name
+        }
+      }
+    }
+  }
+`;
+
+// GraphQL mutations
 const CREATE_USER = `
   mutation CreateUser($inputType: CreateUserInput!) {
     createUser(inputType: $inputType) {
-      id
+      id,
       name
+    }
+  }
+`;
+
+const CREATE_USER_COMPANY = `
+  mutation Mutation($inputType: CreateUserCompanyInput!) {
+    createUserCompany(inputType: $inputType) {
+      company_id
+      user_id
     }
   }
 `;
@@ -58,10 +98,41 @@ const createUserApi = async (input: any): Promise<any> => {
   return response.data.createUser;
 };
 
+const createUserCompanyApi = async (input: any): Promise<any> => {
+  const response = await ApiCall<{ createUserCompany: any }>({
+    query: CREATE_USER_COMPANY,
+    variables: {
+      inputType: input,
+    },
+  });
+
+  if (!response.status) {
+    throw new Error(response.message);
+  }
+
+  return response.data.createUserCompany;
+};
+
+const fetchCompanyById = async (companyId: number): Promise<Company> => {
+  const response = await ApiCall<{ getCompanyById: Company }>({
+    query: GET_COMPANY_BY_ID,
+    variables: {
+      companyId,
+    },
+  });
+
+  if (!response.status) {
+    throw new Error(response.message);
+  }
+
+  return response.data.getCompanyById;
+};
+
 const CreateUserPage = () => {
   const router = useRouter();
   const params = useParams();
   const companyId = parseInt(params.id as string);
+  const userId: number = parseInt(getCookie("id") as string);
 
   const methods = useForm<AddUserForm>({
     resolver: valibotResolver(AddUserSchema),
@@ -72,15 +143,41 @@ const CreateUserPage = () => {
     },
   });
 
-  // Create mutation
+  // Fetch company data to get zone_id
+  const { data: companyData, isLoading: isCompanyLoading } = useQuery({
+    queryKey: ["company", companyId],
+    queryFn: () => fetchCompanyById(companyId),
+    enabled: !!companyId,
+  });
+
+  // Create mutation - handles both user creation and company connection
   const createMutation = useMutation({
-    mutationFn: createUserApi,
+    mutationFn: async (userInput: any) => {
+      // Step 1: Create the user
+      const createdUser = await createUserApi(userInput);
+      console.log("Created User:", createdUser);
+
+
+      // Step 2: Connect user with company
+      const userCompanyInput = {
+        company_id: companyId,
+        user_id: createdUser.id,
+        createdById: userId,
+        status: "ACTIVE"
+      };
+
+      console.log("User-Company Input:", userCompanyInput);
+
+      const userCompanyConnection = await createUserCompanyApi(userCompanyInput);
+
+      return { user: createdUser, connection: userCompanyConnection };
+    },
     onSuccess: (data) => {
-      message.success("User created successfully!");
+      toast.success(`User created and connected to company successfully!`);
       router.push(`/admin/companies/${companyId}/users`);
     },
     onError: (error: Error) => {
-      message.error(`Failed to create user: ${error.message}`);
+      toast.error(`Failed to create user: ${error.message}`);
     },
   });
 
@@ -88,7 +185,12 @@ const CreateUserPage = () => {
     const userId = getCookie("id");
 
     if (!userId) {
-      message.error("User not authenticated. Please login again.");
+      toast.error("User not authenticated. Please login again.");
+      return;
+    }
+
+    if (!companyData?.zone?.id) {
+      toast.error("Company zone information not found. Please try again.");
       return;
     }
 
@@ -96,10 +198,9 @@ const CreateUserPage = () => {
       name: data.name,
       contact1: data.contact1,
       role: data.role,
-      company_id: companyId,
       is_manufacturer: true,
       is_dealer: false,
-      createdById: parseInt(userId.toString()),
+      zone_id: companyData.zone.id,
     };
 
     createMutation.mutate(input);
@@ -108,6 +209,17 @@ const CreateUserPage = () => {
   const handleCancel = () => {
     router.push(`/admin/companies/${companyId}/users`);
   };
+
+  if (isCompanyLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Spin size="large" />
+          <p className="mt-4 text-gray-600">Loading company information...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -215,8 +327,8 @@ const CreateUserPage = () => {
                         options={ROLE_OPTIONS}
                         placeholder="Select user role"
                       />
-                      
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-2">
                         <div className="flex items-start gap-3">
                           <svg
                             className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"
@@ -281,7 +393,7 @@ const CreateUserPage = () => {
                         Full system access, user management, and administrative privileges
                       </p>
                     </div>
-                    
+
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-green-600 font-semibold">💰 Accounts</span>
@@ -290,7 +402,7 @@ const CreateUserPage = () => {
                         Financial operations, billing, and accounting management
                       </p>
                     </div>
-                    
+
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-blue-600 font-semibold">👥 Manager</span>
@@ -299,7 +411,7 @@ const CreateUserPage = () => {
                         Team management, operational oversight, and strategic planning
                       </p>
                     </div>
-                    
+
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-orange-600 font-semibold">📈 Sales</span>
@@ -308,7 +420,7 @@ const CreateUserPage = () => {
                         Customer relationships, sales operations, and revenue generation
                       </p>
                     </div>
-                    
+
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 md:col-span-2 lg:col-span-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-gray-600 font-semibold">🔧 Technical</span>

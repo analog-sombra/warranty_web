@@ -67,12 +67,14 @@ interface User {
     };
 }
 
-interface GetPaginatedUserResponse {
-    getPaginatedUser: {
+interface GetPaginatedUserCompanyResponse {
+    getPaginatedUserCompany: {
         skip: number;
         take: number;
         total: number;
-        data: User[];
+        data: {
+            user: User;
+        }[];
     };
 }
 
@@ -82,38 +84,46 @@ interface SearchPaginationInput {
     search?: string;
 }
 
-interface WhereUserSearchInput {
+interface WhereUserCompanySearchInput {
     company_id: number;
 }
 
 // GraphQL queries
-const GET_PAGINATED_USER = `
-  query GetPaginatedUser($searchPaginationInput: SearchPaginationInput!, $whereSearchInput: WhereUserSearchInput!) {
-    getPaginatedUser(searchPaginationInput: $searchPaginationInput, whereSearchInput: $whereSearchInput) {
+const GET_PAGINATED_USER_COMPANY = `
+  query GetPaginatedUserCompany(
+    $searchPaginationInput: SearchPaginationInput!
+    $whereSearchInput: WhereUserCompanySearchInput!
+  ) {
+    getPaginatedUserCompany(
+      searchPaginationInput: $searchPaginationInput
+      whereSearchInput: $whereSearchInput
+    ) {
       take
       skip
       total
       data {
-        id
-        name
-        contact1
-        contact2
-        address
-        dob
-        email
-        is_dealer
-        role
-        is_manufacturer
-        status
-        zone {
+        user {
           id
           name
-          city {
+          contact1
+          contact2
+          address
+          dob
+          email
+          is_dealer
+          role
+          is_manufacturer
+          status
+          zone {
             id
             name
+            city {
+              id
+              name
+            }
           }
         }
-      }  
+      }
     }
   }
 `;
@@ -144,11 +154,13 @@ const fetchUsers = async (
     total: number;
     data: User[];
 }> => {
-    const response = await ApiCall<GetPaginatedUserResponse>({
-        query: GET_PAGINATED_USER,
+    const response = await ApiCall<GetPaginatedUserCompanyResponse>({
+        query: GET_PAGINATED_USER_COMPANY,
         variables: {
             searchPaginationInput: input,
-            whereSearchInput: {},
+            whereSearchInput: {
+                company_id: companyId,
+            },
         },
     });
 
@@ -156,7 +168,13 @@ const fetchUsers = async (
         throw new Error(response.message);
     }
 
-    return response.data.getPaginatedUser;
+    // Transform the nested user structure to flat User array
+    const transformedData = {
+        ...response.data.getPaginatedUserCompany,
+        data: response.data.getPaginatedUserCompany.data.map(item => item.user)
+    };
+
+    return transformedData;
 };
 
 const deleteUserApi = async (userId: number, deletedById: number): Promise<{ id: number }> => {
