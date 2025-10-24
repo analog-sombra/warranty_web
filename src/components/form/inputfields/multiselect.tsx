@@ -25,7 +25,7 @@ export function MultiSelect<T extends FieldValues>(props: MultiSelectProps<T>) {
       render={({ field }) => (
         <>
           {props.title && (
-            <label htmlFor={props.name} className="text-sm font-normal">
+            <label htmlFor={props.name} className="text-sm font-normal mb-1 block">
               {props.title}
               {props.required && <span className="text-rose-500">*</span>}
             </label>

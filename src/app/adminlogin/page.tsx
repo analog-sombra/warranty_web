@@ -1,5 +1,5 @@
 "use client";
-import UserLoginPage from "@/components/form/login/userlogin";
+import AdminLoginPage from "@/components/form/login/adminlogin";
 
 export default function Home() {
   return (
@@ -27,7 +27,7 @@ export default function Home() {
             </p>
           </div>
           <div className="p-6">
-            <UserLoginPage />
+            <AdminLoginPage />
           </div>
         </div>
 

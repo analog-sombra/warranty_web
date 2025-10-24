@@ -1,7 +1,7 @@
 import { isContainSpace } from "@/utils/methods";
 import { check, InferInput, minLength, object, string, pipe } from "valibot";
 
-const LoginSchema = object({
+const AdminLoginSchema = object({
   mobile: pipe(
     string(),
     minLength(10, "Mobile number should be 10 digits."),
@@ -14,5 +14,5 @@ const LoginSchema = object({
   ),
 });
 
-type LoginForm = InferInput<typeof LoginSchema>;
-export { LoginSchema, type LoginForm };
+type AdminLoginForm = InferInput<typeof AdminLoginSchema>;
+export { AdminLoginSchema, type AdminLoginForm };

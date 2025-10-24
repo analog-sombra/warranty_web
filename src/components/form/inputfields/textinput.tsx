@@ -28,7 +28,7 @@ export function TextInput<T extends FieldValues>(props: TextInputProps<T>) {
       render={({ field }) => (
         <>
           {props.title && (
-            <div className="w-full flex flex-wrap">
+            <div className="w-full flex flex-wrap mb-1">
               <label htmlFor={props.name} className="text-sm font-normal">
                 {props.title}
                 {props.required && <span className="text-rose-500">*</span>}
