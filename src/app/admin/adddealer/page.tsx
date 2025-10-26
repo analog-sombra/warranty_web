@@ -1,3 +1,5 @@
+"use client";
+
 import { FormProvider, useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { onFormError } from "@/utils/methods";
@@ -6,24 +8,25 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { toast } from "react-toastify";
 import { AddCompanyForm, AddCompanySchema } from "@/schema/addcomplany";
-import { TextInput } from "./inputfields/textinput";
-import { MultiSelect } from "./inputfields/multiselect";
+import { TextInput } from "@/components/form/inputfields/textinput";
+import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { getCookie } from "cookies-next/client";
 
-const AddCompanyPage = () => {
+const AddDealerPage = () => {
   const router = useRouter();
-  const userid = getCookie("id"); // Assuming you have a function to get cookies
+  const userid = getCookie("id");
   const methods = useForm<AddCompanyForm>({
     resolver: valibotResolver(AddCompanySchema),
   });
 
-  type AddCompanyResponse = {
+  type AddDealerResponse = {
     id: string;
     name: string;
     role: string;
   };
-  const login = useMutation({
-    mutationKey: ["login"],
+
+  const createDealer = useMutation({
+    mutationKey: ["createDealer"],
     mutationFn: async (data: AddCompanyForm) => {
       const response = await ApiCall({
         query:
@@ -40,7 +43,7 @@ const AddCompanyPage = () => {
             website: data.website,
             pan: data.pan,
             gst: data.gst,
-            is_dealer: false,
+            is_dealer: true, // This is the key difference - set to true for dealers
             contact_person: data.contact_person,
             contact_person_number: data.contact_person_number,
             designation: data.designation,
@@ -58,11 +61,12 @@ const AddCompanyPage = () => {
       }
       return (response.data as Record<string, unknown>)[
         "createCompany"
-      ] as AddCompanyResponse;
+      ] as AddDealerResponse;
     },
 
     onSuccess: () => {
-      router.push("/admin/companies");
+      toast.success("Dealer created successfully!");
+      router.push("/admin/dealers");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -87,13 +91,10 @@ const AddCompanyPage = () => {
         },
       });
 
-
-
       if (!response.status) {
         throw new Error(response.message);
       }
 
-      // if value is not in response.data then return the error
       if (!(response.data as Record<string, unknown>)["getAllZone"]) {
         throw new Error("Value not found in response");
       }
@@ -115,31 +116,17 @@ const AddCompanyPage = () => {
   }
 
   const onSubmit = async (data: AddCompanyForm) => {
-
-    login.mutate({
-      name: data.name,
-      contact1: data.contact1,
-      contact2: data.contact2,
-      address: data.address,
-      website: data.website,
-      zone: data.zone,
-      email: data.email,
-      pan: data.pan,
-      gst: data.gst,
-      contact_person: data.contact_person,
-      contact_person_number: data.contact_person_number,
-      designation: data.designation,
-    });
+    createDealer.mutate(data);
   };
 
   return (
     <div className="h-full bg-white p-4 pt-8">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900 mb-2">
-          Add New Company
+          Add New Dealer
         </h1>
         <p className="text-gray-600 text-sm">
-          Fill in the details to register a new company
+          Fill in the details to register a new dealer
         </p>
       </div>
 
@@ -150,12 +137,12 @@ const AddCompanyPage = () => {
         >
           {/* Main Form Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {/* Company Information */}
+            {/* Dealer Information */}
             <div className="bg-white border border-gray-300 rounded-lg shadow-sm xl:col-span-2">
-              <div className="bg-blue-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                <h2 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+              <div className="bg-orange-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
                   <svg
-                    className="w-5 h-5 text-blue-600"
+                    className="w-5 h-5 text-orange-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -167,19 +154,19 @@ const AddCompanyPage = () => {
                       d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 8h1m-1-4h1m4 4h1m-1-4h1"
                     />
                   </svg>
-                  Company Information
+                  Dealer Information
                 </h2>
-                <p className="text-blue-700 text-sm mt-1">
-                  Basic company details and location information
+                <p className="text-orange-700 text-sm mt-1">
+                  Basic dealer details and location information
                 </p>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <TextInput<AddCompanyForm>
-                    title="Company Name"
+                    title="Dealer Name"
                     required={true}
                     name="name"
-                    placeholder="Enter company name"
+                    placeholder="Enter dealer name"
                   />
                   <MultiSelect<AddCompanyForm>
                     title="Zone"
@@ -213,7 +200,7 @@ const AddCompanyPage = () => {
                     title="Email"
                     required={true}
                     name="email"
-                    placeholder="company@example.com"
+                    placeholder="dealer@example.com"
                   />
                 </div>
               </div>
@@ -241,7 +228,7 @@ const AddCompanyPage = () => {
                     Contact Information
                   </h2>
                   <p className="text-emerald-700 text-sm mt-1">
-                    Company phone numbers for communication
+                    Dealer phone numbers for communication
                   </p>
                 </div>
                 <div className="p-6">
@@ -267,10 +254,10 @@ const AddCompanyPage = () => {
 
               {/* Legal Information */}
               <div className="bg-white border border-gray-300 rounded-lg shadow-sm">
-                <div className="bg-orange-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                  <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
+                <div className="bg-purple-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                  <h2 className="text-lg font-semibold text-purple-900 flex items-center gap-2">
                     <svg
-                      className="w-5 h-5 text-orange-600"
+                      className="w-5 h-5 text-purple-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -284,7 +271,7 @@ const AddCompanyPage = () => {
                     </svg>
                     Legal Information
                   </h2>
-                  <p className="text-orange-700 text-sm mt-1">
+                  <p className="text-purple-700 text-sm mt-1">
                     Tax registration and legal identification numbers
                   </p>
                 </div>
@@ -309,10 +296,10 @@ const AddCompanyPage = () => {
 
             {/* Contact Person Details */}
             <div className="bg-white border border-gray-300 rounded-lg shadow-sm lg:col-span-2 xl:col-span-3">
-              <div className="bg-blue-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                <h2 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+              <div className="bg-orange-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
                   <svg
-                    className="w-5 h-5 text-blue-600"
+                    className="w-5 h-5 text-orange-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -326,8 +313,8 @@ const AddCompanyPage = () => {
                   </svg>
                   Contact Person Details
                 </h2>
-                <p className="text-blue-700 text-sm mt-1">
-                  Primary contact information for this company
+                <p className="text-orange-700 text-sm mt-1">
+                  Primary contact information for this dealer
                 </p>
               </div>
               <div className="p-6">
@@ -355,10 +342,10 @@ const AddCompanyPage = () => {
                       maxlength={10}
                       placeholder="Enter 10-digit mobile number"
                     />
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <svg
-                          className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"
+                          className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -376,7 +363,7 @@ const AddCompanyPage = () => {
                           </p>
                           <p className="text-xs text-gray-600 mt-1">
                             This person will be the primary contact for all
-                            company-related communications and warranty claims.
+                            dealer-related communications and warranty claims.
                           </p>
                         </div>
                       </div>
@@ -390,13 +377,13 @@ const AddCompanyPage = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={methods.formState.isSubmitting || login.isPending}
-            className="w-full max-w-md px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md hover:shadow-lg"
+            disabled={methods.formState.isSubmitting || createDealer.isPending}
+            className="w-full max-w-md px-8 py-4 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-md hover:shadow-lg"
           >
-            {login.isPending ? (
+            {createDealer.isPending ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Registering Company...
+                Registering Dealer...
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
@@ -413,7 +400,7 @@ const AddCompanyPage = () => {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                Register Company
+                Register Dealer
               </div>
             )}
           </button>
@@ -423,4 +410,4 @@ const AddCompanyPage = () => {
   );
 };
 
-export default AddCompanyPage;
+export default AddDealerPage;

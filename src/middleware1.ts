@@ -29,7 +29,6 @@ export function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  console.log("Middleware check:", { pathname, id: !!id, role });
 
   // Allow access to home page without any checks
   if (pathname === "/") {

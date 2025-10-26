@@ -41,9 +41,9 @@ const CREATE_PRODUCT = `
   }
 `;
 
-const GET_CATEGORIES = `
-  query GetAllCategories {
-    getAllProductCategory {
+const GET_ALL_CATEGORIES = `
+  query GetAllCategories($whereSearchInput: WhereProductCategorySearchInput!) {
+    getAllProductCategory(whereSearchInput: $whereSearchInput) {
       id
       name
     }
@@ -51,8 +51,8 @@ const GET_CATEGORIES = `
 `;
 
 const GET_SUBCATEGORIES = `
-  query GetAllProductSubcategory {
-    getAllProductSubcategory {
+  query GetAllProductSubcategory($whereSearchInput: WhereProductSubcategorySearchInput!) {
+    getAllProductSubcategory(whereSearchInput: $whereSearchInput) {
       id
       name
       product_category {
@@ -95,8 +95,12 @@ const createProductApi = async (input: any): Promise<any> => {
 
 const fetchCategories = async (): Promise<Category[]> => {
   const response = await ApiCall<{ getAllProductCategory: Category[] }>({
-    query: GET_CATEGORIES,
-    variables: {},
+    query: GET_ALL_CATEGORIES,
+    variables: {
+      whereSearchInput: {
+        status: "ACTIVE"
+      }
+    },
   });
 
   if (!response.status) {
@@ -109,7 +113,11 @@ const fetchCategories = async (): Promise<Category[]> => {
 const fetchSubcategories = async (): Promise<Subcategory[]> => {
   const response = await ApiCall<{ getAllProductSubcategory: Subcategory[] }>({
     query: GET_SUBCATEGORIES,
-    variables: {},
+    variables: {
+      whereSearchInput: {
+        status: "ACTIVE"
+      }
+    },
   });
 
   if (!response.status) {

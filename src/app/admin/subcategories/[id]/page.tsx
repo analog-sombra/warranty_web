@@ -57,8 +57,8 @@ const GET_SUBCATEGORY_BY_ID = `
 `;
 
 const GET_ALL_CATEGORIES = `
-  query GetAllProductCategory {
-    getAllProductCategory {
+  query GetAllProductCategory($whereSearchInput: WhereProductCategorySearchInput!) {
+    getAllProductCategory(whereSearchInput: $whereSearchInput) {
       id
       name
     }
@@ -93,7 +93,11 @@ const fetchSubcategoryById = async (subcategoryId: number): Promise<Subcategory>
 const fetchCategories = async (): Promise<Category[]> => {
   const response = await ApiCall<{ getAllProductCategory: Category[] }>({
     query: GET_ALL_CATEGORIES,
-    variables: {},
+    variables: {
+      whereSearchInput: {
+        status: "ACTIVE"
+      }
+    },
   });
 
   if (!response.status) {

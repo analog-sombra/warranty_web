@@ -124,8 +124,8 @@ const CREATE_PRODUCT_SUBCATEGORY = `
 `;
 
 const GET_ALL_PRODUCT_CATEGORY = `
-  query GetAllProductCategory {
-    getAllProductCategory {
+  query GetAllProductCategory($whereSearchInput: WhereProductCategorySearchInput!) {
+    getAllProductCategory(whereSearchInput: $whereSearchInput) {
       id,
       name  
     }
@@ -220,7 +220,11 @@ const createSubcategoryApi = async (
 const fetchCategoriesApi = async (): Promise<{ id: number; name: string }[]> => {
   const response = await ApiCall<{ getAllProductCategory: { id: number; name: string }[] }>({
     query: GET_ALL_PRODUCT_CATEGORY,
-    variables: {},
+    variables: {
+      whereSearchInput: {
+        status: "ACTIVE"
+      }
+    },
   });
 
   if (!response.status) {

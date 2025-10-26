@@ -68,6 +68,16 @@ const Sidebar = (props: SidebarProps) => {
               gradientTo="to-emerald-600"
             />
             <MenuTab
+              name="Dealers"
+              path={path}
+              pathcheck="/admin/dealers"
+              click={() => props.setIsOpen(false)}
+              icon={<FluentBuildingShop16Regular className="w-5 h-5" />}
+              iconColor="text-orange-600"
+              gradientFrom="from-orange-500"
+              gradientTo="to-orange-600"
+            />
+            <MenuTab
               name="Categories"
               path={path}
               pathcheck="/admin/categories"
@@ -93,9 +103,9 @@ const Sidebar = (props: SidebarProps) => {
               pathcheck="/admin/products"
               click={() => props.setIsOpen(false)}
               icon={<FluentBuildingSkyscraper24Regular className="w-5 h-5" />}
-              iconColor="text-orange-600"
-              gradientFrom="from-orange-500"
-              gradientTo="to-orange-600"
+              iconColor="text-teal-600"
+              gradientFrom="from-teal-500"
+              gradientTo="to-teal-600"
             />
             <MenuTab
               name="Claims"

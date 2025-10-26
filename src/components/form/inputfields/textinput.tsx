@@ -44,7 +44,7 @@ export function TextInput<T extends FieldValues>(props: TextInputProps<T>) {
             maxLength={props.maxlength ?? undefined}
             status={error ? "error" : undefined}
             className="w-full"
-            value={field.value}
+            value={props.onlynumber ? (field.value === 0 ? "0" : field.value?.toString() || "") : field.value}
             disabled={props.disable ?? false}
             onChange={(e) => {
               if (!e) return;
@@ -56,7 +56,11 @@ export function TextInput<T extends FieldValues>(props: TextInputProps<T>) {
 
               if (props.onlynumber) {
                 value = value.replace(/[^0-9]/g, "");
+                // Convert to number for onlynumber fields, but keep as string if empty
+                field.onChange(value === "" ? "" : parseInt(value, 10) || 0);
+                return;
               }
+              
               field.onChange(value);
             }}
             placeholder={props.placeholder ?? undefined}

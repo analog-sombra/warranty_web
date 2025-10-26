@@ -1,32 +1,37 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useForm, FormProvider } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useForm, FormProvider, Controller } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Typography, Spin } from "antd";
+import { Button, Typography, Spin, Input } from "antd";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
 import { TextInput } from "@/components/form/inputfields/textinput";
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { onFormError } from "@/utils/methods";
-import { object, string, pipe, InferInput } from "valibot";
+import { object, string, pipe, InferInput, minLength, maxLength, regex } from "valibot";
 import { toast } from "react-toastify";
 
 const { Title } = Typography;
 
 // Validation Schema
 const AddUserSchema = object({
-  name: pipe(string("Enter User Name")),
-  contact1: pipe(string("Enter Contact Number")),
-  role: pipe(string("Select Role")),
+  name: pipe(string("Enter User Name"), minLength(2, "Name must be at least 2 characters")),
+  contact1: pipe(
+    string("Enter Contact Number"),
+    minLength(10, "Contact number must be 10 digits"),
+    maxLength(10, "Contact number must be 10 digits"),
+    regex(/^[0-9]+$/, "Contact number must contain only digits")
+  ),
+  role: pipe(string("Select Role"), minLength(1, "Please select a role")),
 });
 
 type AddUserForm = InferInput<typeof AddUserSchema>;
 
-// Company interface
-interface Company {
+// Dealer interface
+interface Dealer {
   id: number;
   name: string;
   zone: {
@@ -39,7 +44,7 @@ interface Company {
 }
 
 // GraphQL queries
-const GET_COMPANY_BY_ID = `
+const GET_DEALER_BY_ID = `
   query GetCompanyById($companyId: Int!) {
     getCompanyById(id: $companyId) {
       id
@@ -74,16 +79,16 @@ const CREATE_USER_COMPANY = `
   }
 `;
 
-// Role options
+// Role options for dealers
 const ROLE_OPTIONS = [
-  { label: "Admin", value: "MANUF_ADMIN" },
-  { label: "Accounts", value: "MANUF_ACCOUNTS" },
-  { label: "Manager", value: "MANUF_MANAGER" },
-  { label: "Sales", value: "MANUF_SALES" },
-  { label: "Technical", value: "MANUF_TECHNICAL" },
+  { label: "Admin", value: "DEALER_ADMIN" },
+  { label: "Accounts", value: "DEALER_ACCOUNTS" },
+  { label: "Manager", value: "DEALER_MANAGER" },
+  { label: "Sales", value: "DEALER_SALES" },
 ];
 
 const createUserApi = async (input: any): Promise<any> => {
+
   const response = await ApiCall<{ createUser: any }>({
     query: CREATE_USER,
     variables: {
@@ -91,7 +96,9 @@ const createUserApi = async (input: any): Promise<any> => {
     },
   });
 
+
   if (!response.status) {
+    console.error("CreateUser API failed:", response.message);
     throw new Error(response.message);
   }
 
@@ -99,6 +106,7 @@ const createUserApi = async (input: any): Promise<any> => {
 };
 
 const createUserCompanyApi = async (input: any): Promise<any> => {
+
   const response = await ApiCall<{ createUserCompany: any }>({
     query: CREATE_USER_COMPANY,
     variables: {
@@ -106,18 +114,20 @@ const createUserCompanyApi = async (input: any): Promise<any> => {
     },
   });
 
+
   if (!response.status) {
+    console.error("CreateUserCompany API failed:", response.message);
     throw new Error(response.message);
   }
 
   return response.data.createUserCompany;
 };
 
-const fetchCompanyById = async (companyId: number): Promise<Company> => {
-  const response = await ApiCall<{ getCompanyById: Company }>({
-    query: GET_COMPANY_BY_ID,
+const fetchDealerById = async (dealerId: number): Promise<Dealer> => {
+  const response = await ApiCall<{ getCompanyById: Dealer }>({
+    query: GET_DEALER_BY_ID,
     variables: {
-      companyId,
+      companyId: dealerId,
     },
   });
 
@@ -128,10 +138,16 @@ const fetchCompanyById = async (companyId: number): Promise<Company> => {
   return response.data.getCompanyById;
 };
 
-const CreateUserPage = () => {
+interface CreateUserPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
   const router = useRouter();
-  const params = useParams();
-  const companyId = parseInt(params.id as string);
+  const unwrappedParams = React.use(params) as { id: string };
+  const dealerId = parseInt(unwrappedParams.id);
   const userId: number = parseInt(getCookie("id") as string);
 
   const methods = useForm<AddUserForm>({
@@ -141,40 +157,46 @@ const CreateUserPage = () => {
       contact1: "",
       role: "",
     },
+    mode: "onChange", // Enable real-time validation
   });
 
-  // Fetch company data to get zone_id
-  const { data: companyData, isLoading: isCompanyLoading } = useQuery({
-    queryKey: ["company", companyId],
-    queryFn: () => fetchCompanyById(companyId),
-    enabled: !!companyId,
+  // Fetch dealer data to get zone_id
+  const { data: dealerData, isLoading: isDealerLoading } = useQuery({
+    queryKey: ["dealer", dealerId],
+    queryFn: () => fetchDealerById(dealerId),
+    enabled: !!dealerId,
   });
 
-  // Create mutation - handles both user creation and company connection
+  // Create mutation - handles both user creation and dealer connection
   const createMutation = useMutation({
     mutationFn: async (userInput: any) => {
-      // Step 1: Create the user
-      const createdUser = await createUserApi(userInput);
 
+      try {
+        // Step 1: Create the user
+        const createdUser = await createUserApi(userInput);
 
-      // Step 2: Connect user with company
-      const userCompanyInput = {
-        company_id: companyId,
-        user_id: createdUser.id,
-        createdById: userId,
-        status: "ACTIVE"
-      };
+        // Step 2: Connect user with dealer
+        const userCompanyInput = {
+          company_id: dealerId,
+          user_id: createdUser.id,
+          createdById: userId,
+          status: "ACTIVE"
+        };
 
+        const userCompanyConnection = await createUserCompanyApi(userCompanyInput);
 
-      const userCompanyConnection = await createUserCompanyApi(userCompanyInput);
-
-      return { user: createdUser, connection: userCompanyConnection };
+        return { user: createdUser, connection: userCompanyConnection };
+      } catch (error) {
+        console.error("Error in user creation process:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      toast.success(`User created and connected to company successfully!`);
-      router.push(`/admin/companies/${companyId}/users`);
+      toast.success(`User "${data.user.name}" created and connected to dealer successfully!`);
+      router.push(`/admin/dealers/${dealerId}/users`);
     },
     onError: (error: Error) => {
+      console.error("User creation failed:", error);
       toast.error(`Failed to create user: ${error.message}`);
     },
   });
@@ -187,33 +209,34 @@ const CreateUserPage = () => {
       return;
     }
 
-    if (!companyData?.zone?.id) {
-      toast.error("Company zone information not found. Please try again.");
+    if (!dealerData?.zone?.id) {
+      toast.error("Dealer zone information not found. Please try again.");
       return;
     }
 
+    // Ensure contact1 is treated as string
     const input = {
-      name: data.name,
-      contact1: data.contact1,
+      name: data.name.trim(),
+      contact1: data.contact1.toString().trim(),
       role: data.role,
-      is_manufacturer: true,
-      is_dealer: false,
-      zone_id: companyData.zone.id,
+      is_manufacturer: false,
+      is_dealer: true,
+      zone_id: dealerData.zone.id,
     };
 
     createMutation.mutate(input);
   };
 
   const handleCancel = () => {
-    router.push(`/admin/companies/${companyId}/users`);
+    router.push(`/admin/dealers/${dealerId}/users`);
   };
 
-  if (isCompanyLoading) {
+  if (isDealerLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Spin size="large" />
-          <p className="mt-4 text-gray-600">Loading company information...</p>
+          <p className="mt-4 text-gray-600">Loading dealer information...</p>
         </div>
       </div>
     );
@@ -238,7 +261,7 @@ const CreateUserPage = () => {
                   Add New User
                 </Title>
                 <p className="text-gray-600 text-sm">
-                  Create a new manufacturer user for Company ID: {companyId}
+                  Create a new dealer user for Dealer ID: {dealerId}
                 </p>
               </div>
             </div>
@@ -253,10 +276,10 @@ const CreateUserPage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* User Information */}
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm xl:col-span-2">
-                  <div className="bg-blue-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                    <h2 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+                  <div className="bg-purple-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                    <h2 className="text-lg font-semibold text-purple-900 flex items-center gap-2">
                       <svg
-                        className="w-5 h-5 text-blue-600"
+                        className="w-5 h-5 text-purple-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -270,35 +293,79 @@ const CreateUserPage = () => {
                       </svg>
                       User Information
                     </h2>
-                    <p className="text-blue-700 text-sm mt-1">
+                    <p className="text-purple-700 text-sm mt-1">
                       Basic user details and contact information
                     </p>
                   </div>
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <TextInput<AddUserForm>
-                        title="Full Name"
-                        required={true}
-                        name="name"
-                        placeholder="Enter user's full name"
-                      />
-                      <TextInput<AddUserForm>
-                        title="Primary Contact"
-                        required={true}
-                        name="contact1"
-                        placeholder="Enter contact number"
-                        onlynumber={true}
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Full Name Input */}
+                      <div className="flex flex-col">
+                        <label className="text-sm font-normal mb-2 block">
+                          Full Name
+                          <span className="text-rose-500">*</span>
+                        </label>
+                        <Controller
+                          control={methods.control}
+                          name="name"
+                          render={({ field, fieldState: { error } }: any) => (
+                            <div className="w-full">
+                              <Input
+                                {...field}
+                                status={error ? "error" : undefined}
+                                className="w-full"
+                                placeholder="Enter user's full name"
+                                size="large"
+                              />
+                              {error && (
+                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                              )}
+                            </div>
+                          )}
+                        />
+                      </div>
+                      
+                      {/* Primary Contact Input */}
+                      <div className="flex flex-col">
+                        <label className="text-sm font-normal mb-2 block">
+                          Primary Contact
+                          <span className="text-rose-500">*</span>
+                        </label>
+                        <Controller
+                          control={methods.control}
+                          name="contact1"
+                          render={({ field, fieldState: { error } }: any) => (
+                            <div className="w-full">
+                              <Input
+                                {...field}
+                                status={error ? "error" : undefined}
+                                className="w-full"
+                                placeholder="Enter contact number (10 digits)"
+                                maxLength={10}
+                                size="large"
+                                onChange={(e: any) => {
+                                  // Only allow numbers
+                                  const value = e.target.value.replace(/[^0-9]/g, "");
+                                  field.onChange(value);
+                                }}
+                              />
+                              {error && (
+                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                              )}
+                            </div>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Role Information */}
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm">
-                  <div className="bg-green-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                    <h2 className="text-lg font-semibold text-green-900 flex items-center gap-2">
+                  <div className="bg-orange-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                    <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
                       <svg
-                        className="w-5 h-5 text-green-600"
+                        className="w-5 h-5 text-orange-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -312,7 +379,7 @@ const CreateUserPage = () => {
                       </svg>
                       Role Assignment
                     </h2>
-                    <p className="text-green-700 text-sm mt-1">
+                    <p className="text-orange-700 text-sm mt-1">
                       Select user role and permissions
                     </p>
                   </div>
@@ -346,8 +413,8 @@ const CreateUserPage = () => {
                               Default Settings
                             </p>
                             <ul className="text-xs text-blue-600 mt-1 space-y-1">
-                              <li>• is_manufacturer = true</li>
-                              <li>• is_dealer = false</li>
+                              <li>• is_manufacturer = false</li>
+                              <li>• is_dealer = true</li>
                               <li>• status = ACTIVE</li>
                             </ul>
                           </div>
@@ -360,10 +427,10 @@ const CreateUserPage = () => {
 
               {/* Role Description Card */}
               <div className="bg-white border border-gray-300 rounded-lg shadow-sm">
-                <div className="bg-orange-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                  <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
+                <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <svg
-                      className="w-5 h-5 text-orange-600"
+                      className="w-5 h-5 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -375,20 +442,20 @@ const CreateUserPage = () => {
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                    Role Descriptions
+                    Dealer Role Descriptions
                   </h2>
-                  <p className="text-orange-700 text-sm mt-1">
-                    Understanding different user roles and their responsibilities
+                  <p className="text-gray-700 text-sm mt-1">
+                    Understanding different dealer user roles and their responsibilities
                   </p>
                 </div>
                 <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-purple-600 font-semibold">👑 Admin</span>
                       </div>
                       <p className="text-purple-700 text-sm">
-                        Full system access, user management, and administrative privileges
+                        Full dealer system access, user management, and administrative privileges
                       </p>
                     </div>
 
@@ -397,7 +464,7 @@ const CreateUserPage = () => {
                         <span className="text-green-600 font-semibold">💰 Accounts</span>
                       </div>
                       <p className="text-green-700 text-sm">
-                        Financial operations, billing, and accounting management
+                        Financial operations, dealer billing, and accounting management
                       </p>
                     </div>
 
@@ -406,7 +473,7 @@ const CreateUserPage = () => {
                         <span className="text-blue-600 font-semibold">👥 Manager</span>
                       </div>
                       <p className="text-blue-700 text-sm">
-                        Team management, operational oversight, and strategic planning
+                        Dealer operations management, inventory oversight, and team coordination
                       </p>
                     </div>
 
@@ -415,16 +482,7 @@ const CreateUserPage = () => {
                         <span className="text-orange-600 font-semibold">📈 Sales</span>
                       </div>
                       <p className="text-orange-700 text-sm">
-                        Customer relationships, sales operations, and revenue generation
-                      </p>
-                    </div>
-
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 md:col-span-2 lg:col-span-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-gray-600 font-semibold">🔧 Technical</span>
-                      </div>
-                      <p className="text-gray-700 text-sm">
-                        Technical support, system maintenance, and product expertise
+                        Customer relationships, sales operations, and warranty processing
                       </p>
                     </div>
                   </div>
@@ -447,7 +505,7 @@ const CreateUserPage = () => {
                   htmlType="submit"
                   size="large"
                   loading={createMutation.isPending}
-                  className="px-8 bg-blue-600 hover:bg-blue-700 border-blue-600 hover:border-blue-700"
+                  className="px-8 bg-purple-600 hover:bg-purple-700 border-purple-600 hover:border-purple-700"
                 >
                   {createMutation.isPending ? (
                     <div className="flex items-center gap-2">

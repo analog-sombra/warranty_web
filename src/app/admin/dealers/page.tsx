@@ -44,8 +44,8 @@ try {
 const { Title } = Typography;
 const { Option } = Select;
 
-// Types for the company data
-interface Company {
+// Types for the dealer data
+interface Dealer {
   id: number;
   name: string;
   zone: {
@@ -58,12 +58,12 @@ interface Company {
   status: "ACTIVE" | "INACTIVE";
 }
 
-interface GetPaginatedCompanyResponse {
+interface GetPaginatedDealerResponse {
   getPaginatedCompany: {
     skip: number;
     take: number;
     total: number;
-    data: Company[];
+    data: Dealer[];
   };
 }
 
@@ -73,13 +73,13 @@ interface SearchPaginationInput {
   search?: string;
 }
 
-interface UpdateCompanyInput {
+interface UpdateDealerInput {
   status: "ACTIVE" | "INACTIVE";
   updatedById: number;
 }
 
 // GraphQL queries
-const GET_PAGINATED_COMPANY = `
+const GET_PAGINATED_DEALER = `
   query GetPaginatedCompany($searchPaginationInput: SearchPaginationInput!, $whereSearchInput: WhereCompanySearchInput!) {
     getPaginatedCompany(searchPaginationInput: $searchPaginationInput, whereSearchInput: $whereSearchInput) {
       skip
@@ -101,7 +101,7 @@ const GET_PAGINATED_COMPANY = `
   }
 `;
 
-const DELETE_COMPANY = `
+const DELETE_DEALER = `
   mutation DeleteCompany($deleteCompanyId: Int!, $userid: Int!) {
     deleteCompany(id: $deleteCompanyId, userid: $userid) {
       id  
@@ -109,7 +109,7 @@ const DELETE_COMPANY = `
   }
 `;
 
-const UPDATE_COMPANY_STATUS = `
+const UPDATE_DEALER_STATUS = `
   mutation UpdateCompany($updateCompanyId: Int!, $updateType: UpdateCompanyInput!) {
     updateCompany(id: $updateCompanyId, updateType: $updateType) {
       id  
@@ -118,18 +118,18 @@ const UPDATE_COMPANY_STATUS = `
 `;
 
 // API functions
-const fetchCompanies = async (input: SearchPaginationInput): Promise<{
+const fetchDealers = async (input: SearchPaginationInput): Promise<{
   skip: number;
   take: number;
   total: number;
-  data: Company[];
+  data: Dealer[];
 }> => {
-  const response = await ApiCall<GetPaginatedCompanyResponse>({
-    query: GET_PAGINATED_COMPANY,
+  const response = await ApiCall<GetPaginatedDealerResponse>({
+    query: GET_PAGINATED_DEALER,
     variables: {
       searchPaginationInput: input,
       whereSearchInput: {
-        is_dealer: false,
+        is_dealer: true,
       },
     },
   });
@@ -141,11 +141,11 @@ const fetchCompanies = async (input: SearchPaginationInput): Promise<{
   return response.data.getPaginatedCompany;
 };
 
-const deleteCompanyApi = async (companyId: number, userId: number): Promise<{ id: number }> => {
+const deleteDealerApi = async (dealerId: number, userId: number): Promise<{ id: number }> => {
   const response = await ApiCall<{ deleteCompany: { id: number } }>({
-    query: DELETE_COMPANY,
+    query: DELETE_DEALER,
     variables: {
-      deleteCompanyId: companyId,
+      deleteCompanyId: dealerId,
       userid: userId,
     },
   });
@@ -157,15 +157,15 @@ const deleteCompanyApi = async (companyId: number, userId: number): Promise<{ id
   return response.data.deleteCompany;
 };
 
-const updateCompanyStatusApi = async (
-  companyId: number,
+const updateDealerStatusApi = async (
+  dealerId: number,
   status: "ACTIVE" | "INACTIVE",
   updatedById: number
 ): Promise<{ id: number }> => {
   const response = await ApiCall<{ updateCompany: { id: number } }>({
-    query: UPDATE_COMPANY_STATUS,
+    query: UPDATE_DEALER_STATUS,
     variables: {
-      updateCompanyId: companyId,
+      updateCompanyId: dealerId,
       updateType: {
         status,
         updatedById,
@@ -180,7 +180,7 @@ const updateCompanyStatusApi = async (
   return response.data.updateCompany;
 };
 
-const CompaniesPage = () => {
+const DealersPage = () => {
   // Router for navigation
   const router = useRouter();
 
@@ -194,9 +194,9 @@ const CompaniesPage = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
+  const [dealerToDelete, setDealerToDelete] = useState<Dealer | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [companyToUpdateStatus, setCompanyToUpdateStatus] = useState<Company | null>(null);
+  const [dealerToUpdateStatus, setDealerToUpdateStatus] = useState<Dealer | null>(null);
 
   // Query client for invalidating queries
   const queryClient = useQueryClient();
@@ -210,58 +210,58 @@ const CompaniesPage = () => {
 
   // Fetch data using React Query
   const {
-    data: companiesData,
+    data: dealersData,
     isLoading,
     isError,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["companies", searchInput],
-    queryFn: () => fetchCompanies(searchInput),
+    queryKey: ["dealers", searchInput],
+    queryFn: () => fetchDealers(searchInput),
     placeholderData: (previousData) => previousData,
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: ({ companyId, userId }: { companyId: number; userId: number }) =>
-      deleteCompanyApi(companyId, userId),
+    mutationFn: ({ dealerId, userId }: { dealerId: number; userId: number }) =>
+      deleteDealerApi(dealerId, userId),
     onSuccess: (data, variables) => {
-      toast.success(`Company deleted successfully`);
-      // Invalidate and refetch companies data
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast.success(`Dealer deleted successfully`);
+      // Invalidate and refetch dealers data
+      queryClient.invalidateQueries({ queryKey: ["dealers"] });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to delete company: ${error.message}`);
+      toast.error(`Failed to delete dealer: ${error.message}`);
     },
   });
 
   // Status update mutation
   const statusUpdateMutation = useMutation({
     mutationFn: ({
-      companyId,
+      dealerId,
       status,
       updatedById
     }: {
-      companyId: number;
+      dealerId: number;
       status: "ACTIVE" | "INACTIVE";
       updatedById: number
-    }) => updateCompanyStatusApi(companyId, status, updatedById),
+    }) => updateDealerStatusApi(dealerId, status, updatedById),
     onSuccess: (data, variables) => {
       const statusText = variables.status.toLowerCase();
-      toast.success(`Company status updated to ${statusText}`);
-      // Invalidate and refetch companies data
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast.success(`Dealer status updated to ${statusText}`);
+      // Invalidate and refetch dealers data
+      queryClient.invalidateQueries({ queryKey: ["dealers"] });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update company status: ${error.message}`);
+      toast.error(`Failed to update dealer status: ${error.message}`);
     },
   });
 
   // Create column helper
-  const columnHelper = createColumnHelper<Company>();
+  const columnHelper = createColumnHelper<Dealer>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Company, any>[]>(
+  const columns = useMemo<ColumnDef<Dealer, any>[]>(
     () => [
       columnHelper.accessor("id", {
         header: "ID",
@@ -269,11 +269,11 @@ const CompaniesPage = () => {
         size: 80,
       }),
       columnHelper.accessor("name", {
-        header: "Company Name",
+        header: "Dealer Name",
         cell: (info) => (
           <div className="flex items-center">
-            <div className="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-blue-600 font-semibold text-xs">
+            <div className="flex-shrink-0 h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+              <span className="text-orange-600 font-semibold text-xs">
                 {info.getValue().charAt(0).toUpperCase()}
               </span>
             </div>
@@ -299,7 +299,7 @@ const CompaniesPage = () => {
         header: "Contact",
         cell: (info) => (
           <div className="flex items-center">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
               📞 {info.getValue()}
             </span>
           </div>
@@ -310,7 +310,7 @@ const CompaniesPage = () => {
         header: "Status",
         cell: (info) => {
           const status = info.getValue();
-          const company = info.row.original;
+          const dealer = info.row.original;
           const isUpdating = statusUpdateMutation.isPending;
 
           return (
@@ -327,12 +327,12 @@ const CompaniesPage = () => {
                 type="text"
                 size="small"
                 loading={isUpdating}
-                onClick={() => handleStatusToggle(company)}
+                onClick={() => handleStatusToggle(dealer)}
                 className={`hover:scale-105 transition-transform duration-200 ${status === "ACTIVE"
                   ? "text-red-600 hover:bg-red-50"
                   : "text-green-600 hover:bg-green-50"
                   }`}
-                title={`Click to ${status === "ACTIVE" ? "deactivate" : "activate"} company`}
+                title={`Click to ${status === "ACTIVE" ? "deactivate" : "activate"} dealer`}
               >
                 {status === "ACTIVE" ? "📴" : "✅"}
               </Button>
@@ -347,12 +347,12 @@ const CompaniesPage = () => {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => {
-          const company = row.original;
+          const dealer = row.original;
           return (
             <div className="flex items-center justify-center">
               <Dropdown
                 menu={{
-                  items: getActionMenuItems(company),
+                  items: getActionMenuItems(dealer),
                 }}
                 trigger={['click']}
                 placement="bottomRight"
@@ -361,7 +361,7 @@ const CompaniesPage = () => {
                   type="text"
                   icon={<MoreOutlined />}
                   size="small"
-                  className="hover:bg-blue-50 hover:text-blue-600 rounded-full h-8 w-8 flex items-center justify-center transition-all duration-200"
+                  className="hover:bg-orange-50 hover:text-orange-600 rounded-full h-8 w-8 flex items-center justify-center transition-all duration-200"
                 />
               </Dropdown>
             </div>
@@ -376,22 +376,22 @@ const CompaniesPage = () => {
 
   // Filter data based on status filter
   const filteredData = useMemo(() => {
-    if (!companiesData?.data) return [];
+    if (!dealersData?.data) return [];
 
-    let filtered = [...companiesData.data];
+    let filtered = [...dealersData.data];
 
     if (statusFilter && statusFilter !== "all") {
-      filtered = filtered.filter((company) => company.status === statusFilter);
+      filtered = filtered.filter((dealer) => dealer.status === statusFilter);
     }
 
     return filtered;
-  }, [companiesData, statusFilter]);
+  }, [dealersData, statusFilter]);
 
   // Create table instance
   const table = useReactTable({
     data: filteredData,
     columns,
-    pageCount: companiesData ? Math.ceil(companiesData.total / pagination.pageSize) : -1,
+    pageCount: dealersData ? Math.ceil(dealersData.total / pagination.pageSize) : -1,
     state: {
       sorting,
       columnFilters,
@@ -427,16 +427,16 @@ const CompaniesPage = () => {
   };
 
   // Handle edit action
-  const handleEdit = (company: Company) => {
-    router.push(`/admin/companies/${company.id}/edit`);
+  const handleEdit = (dealer: Dealer) => {
+    router.push(`/admin/dealers/${dealer.id}/edit`);
   };
   // Handle view action
-  const handleView = (company: Company) => {
-    router.push(`/admin/companies/${company.id}`);
+  const handleView = (dealer: Dealer) => {
+    router.push(`/admin/dealers/${dealer.id}`);
   };
 
   // Handle delete action
-  const handleDelete = (company: Company) => {
+  const handleDelete = (dealer: Dealer) => {
     const userId = getCookie("id");
 
     if (!userId) {
@@ -444,13 +444,13 @@ const CompaniesPage = () => {
       return;
     }
 
-    setCompanyToDelete(company);
+    setDealerToDelete(dealer);
     setIsDeleteModalOpen(true);
   };
 
   // Handle confirm delete
   const handleConfirmDelete = () => {
-    if (!companyToDelete) return;
+    if (!dealerToDelete) return;
 
     const userId = getCookie("id");
     if (!userId) {
@@ -460,13 +460,13 @@ const CompaniesPage = () => {
 
     deleteMutation.mutate(
       {
-        companyId: companyToDelete.id,
+        dealerId: dealerToDelete.id,
         userId: parseInt(userId.toString()),
       },
       {
         onSuccess: () => {
           setIsDeleteModalOpen(false);
-          setCompanyToDelete(null);
+          setDealerToDelete(null);
         },
         onError: () => {
           // Keep modal open on error so user can retry
@@ -478,11 +478,11 @@ const CompaniesPage = () => {
   // Handle cancel delete
   const handleCancelDelete = () => {
     setIsDeleteModalOpen(false);
-    setCompanyToDelete(null);
+    setDealerToDelete(null);
   };
 
   // Handle status toggle
-  const handleStatusToggle = (company: Company) => {
+  const handleStatusToggle = (dealer: Dealer) => {
     const userId = getCookie("id");
 
     if (!userId) {
@@ -490,13 +490,13 @@ const CompaniesPage = () => {
       return;
     }
 
-    setCompanyToUpdateStatus(company);
+    setDealerToUpdateStatus(dealer);
     setIsStatusModalOpen(true);
   };
 
   // Handle confirm status update
   const handleConfirmStatusUpdate = () => {
-    if (!companyToUpdateStatus) return;
+    if (!dealerToUpdateStatus) return;
 
     const userId = getCookie("id");
     if (!userId) {
@@ -504,18 +504,18 @@ const CompaniesPage = () => {
       return;
     }
 
-    const newStatus = companyToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const newStatus = dealerToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
     statusUpdateMutation.mutate(
       {
-        companyId: companyToUpdateStatus.id,
+        dealerId: dealerToUpdateStatus.id,
         status: newStatus,
         updatedById: parseInt(userId.toString()),
       },
       {
         onSuccess: () => {
           setIsStatusModalOpen(false);
-          setCompanyToUpdateStatus(null);
+          setDealerToUpdateStatus(null);
         },
         onError: () => {
           // Keep modal open on error so user can retry
@@ -527,27 +527,27 @@ const CompaniesPage = () => {
   // Handle cancel status update
   const handleCancelStatusUpdate = () => {
     setIsStatusModalOpen(false);
-    setCompanyToUpdateStatus(null);
+    setDealerToUpdateStatus(null);
   };
 
-  // Handle add company navigation
-  const handleAddCompany = () => {
-    router.push('/admin/addcompany');
+  // Handle add dealer navigation
+  const handleAddDealer = () => {
+    router.push('/admin/adddealer');
   };
 
   // Get action menu items for each row
-  const getActionMenuItems = (company: Company) => [
+  const getActionMenuItems = (dealer: Dealer) => [
     {
       key: 'view',
       icon: <EyeOutlined />,
       label: 'View',
-      onClick: () => handleView(company),
+      onClick: () => handleView(dealer),
     },
     {
       key: 'edit',
       icon: <EditOutlined />,
       label: 'Edit',
-      onClick: () => handleEdit(company),
+      onClick: () => handleEdit(dealer),
     },
     {
       key: 'delete',
@@ -555,7 +555,7 @@ const CompaniesPage = () => {
       label: deleteMutation.isPending ? 'Deleting...' : 'Delete',
       danger: true,
       disabled: deleteMutation.isPending,
-      onClick: () => handleDelete(company),
+      onClick: () => handleDelete(dealer),
     },
   ];
 
@@ -585,7 +585,7 @@ const CompaniesPage = () => {
             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
               <DeleteOutlined className="text-red-600 text-lg" />
             </div>
-            <span className="text-lg font-semibold text-gray-900">Delete Company</span>
+            <span className="text-lg font-semibold text-gray-900">Delete Dealer</span>
           </div>
         }
         open={isDeleteModalOpen}
@@ -594,23 +594,23 @@ const CompaniesPage = () => {
         width={500}
         centered
       >
-        {companyToDelete && (
+        {dealerToDelete && (
           <div className="py-4">
             <div className="mb-6">
               <p className="text-gray-700 mb-2">
-                Are you sure you want to delete the company:
+                Are you sure you want to delete the dealer:
               </p>
               <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-red-400">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
                     <span className="text-red-600 font-semibold text-sm">
-                      {companyToDelete.name.charAt(0).toUpperCase()}
+                      {dealerToDelete.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{companyToDelete.name}</h4>
+                    <h4 className="font-semibold text-gray-900">{dealerToDelete.name}</h4>
                     <p className="text-sm text-gray-500">
-                      ID: {companyToDelete.id} • {companyToDelete.zone.city.name}, {companyToDelete.zone.name}
+                      ID: {dealerToDelete.id} • {dealerToDelete.zone.city.name}, {dealerToDelete.zone.name}
                     </p>
                   </div>
                 </div>
@@ -621,7 +621,7 @@ const CompaniesPage = () => {
                   <div>
                     <p className="text-red-800 font-medium text-sm">Warning</p>
                     <p className="text-red-700 text-sm">
-                      This action cannot be undone. All data associated with this company will be permanently deleted.
+                      This action cannot be undone. All data associated with this dealer will be permanently deleted.
                     </p>
                   </div>
                 </div>
@@ -644,7 +644,7 @@ const CompaniesPage = () => {
                 onClick={handleConfirmDelete}
                 icon={deleteMutation.isPending ? null : <DeleteOutlined />}
               >
-                {deleteMutation.isPending ? "Deleting..." : "Delete Company"}
+                {deleteMutation.isPending ? "Deleting..." : "Delete Dealer"}
               </Button>
             </div>
           </div>
@@ -655,16 +655,16 @@ const CompaniesPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${companyToUpdateStatus?.status === "ACTIVE"
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${dealerToUpdateStatus?.status === "ACTIVE"
               ? "bg-red-100"
               : "bg-green-100"
               }`}>
               <span className="text-lg">
-                {companyToUpdateStatus?.status === "ACTIVE" ? "📴" : "✅"}
+                {dealerToUpdateStatus?.status === "ACTIVE" ? "📴" : "✅"}
               </span>
             </div>
             <span className="text-lg font-semibold text-gray-900">
-              {companyToUpdateStatus?.status === "ACTIVE" ? "Deactivate" : "Activate"} Company
+              {dealerToUpdateStatus?.status === "ACTIVE" ? "Deactivate" : "Activate"} Dealer
             </span>
           </div>
         }
@@ -674,54 +674,54 @@ const CompaniesPage = () => {
         width={500}
         centered
       >
-        {companyToUpdateStatus && (
+        {dealerToUpdateStatus && (
           <div className="py-4">
             <div className="mb-6">
               <p className="text-gray-700 mb-2">
                 Are you sure you want to{" "}
                 <strong>
-                  {companyToUpdateStatus.status === "ACTIVE" ? "deactivate" : "activate"}
+                  {dealerToUpdateStatus.status === "ACTIVE" ? "deactivate" : "activate"}
                 </strong>{" "}
-                the company:
+                the dealer:
               </p>
-              <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
+              <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-orange-400">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold text-sm">
-                      {companyToUpdateStatus.name.charAt(0).toUpperCase()}
+                  <div className="flex-shrink-0 h-10 w-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <span className="text-orange-600 font-semibold text-sm">
+                      {dealerToUpdateStatus.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{companyToUpdateStatus.name}</h4>
+                    <h4 className="font-semibold text-gray-900">{dealerToUpdateStatus.name}</h4>
                     <p className="text-sm text-gray-500">
-                      ID: {companyToUpdateStatus.id} • {companyToUpdateStatus.zone.city.name}, {companyToUpdateStatus.zone.name}
+                      ID: {dealerToUpdateStatus.id} • {dealerToUpdateStatus.zone.city.name}, {dealerToUpdateStatus.zone.name}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className={`mt-4 p-3 rounded-lg border ${companyToUpdateStatus.status === "ACTIVE"
+              <div className={`mt-4 p-3 rounded-lg border ${dealerToUpdateStatus.status === "ACTIVE"
                 ? "bg-red-50 border-red-200"
                 : "bg-green-50 border-green-200"
                 }`}>
                 <div className="flex items-start gap-2">
                   <span className="text-lg">
-                    {companyToUpdateStatus.status === "ACTIVE" ? "⚠️" : "ℹ️"}
+                    {dealerToUpdateStatus.status === "ACTIVE" ? "⚠️" : "ℹ️"}
                   </span>
                   <div>
-                    <p className={`font-medium text-sm ${companyToUpdateStatus.status === "ACTIVE"
+                    <p className={`font-medium text-sm ${dealerToUpdateStatus.status === "ACTIVE"
                       ? "text-red-800"
                       : "text-green-800"
                       }`}>
                       Status Change
                     </p>
-                    <p className={`text-sm ${companyToUpdateStatus.status === "ACTIVE"
+                    <p className={`text-sm ${dealerToUpdateStatus.status === "ACTIVE"
                       ? "text-red-700"
                       : "text-green-700"
                       }`}>
-                      This will change the company status from{" "}
-                      <strong>{companyToUpdateStatus.status}</strong> to{" "}
+                      This will change the dealer status from{" "}
+                      <strong>{dealerToUpdateStatus.status}</strong> to{" "}
                       <strong>
-                        {companyToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"}
+                        {dealerToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"}
                       </strong>.
                     </p>
                   </div>
@@ -743,17 +743,17 @@ const CompaniesPage = () => {
                 loading={statusUpdateMutation.isPending}
                 onClick={handleConfirmStatusUpdate}
                 className={
-                  companyToUpdateStatus.status === "ACTIVE"
+                  dealerToUpdateStatus.status === "ACTIVE"
                     ? "bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                     : "bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700"
                 }
                 icon={statusUpdateMutation.isPending ? null : (
-                  companyToUpdateStatus.status === "ACTIVE" ? "📴" : "✅"
+                  dealerToUpdateStatus.status === "ACTIVE" ? "📴" : "✅"
                 )}
               >
                 {statusUpdateMutation.isPending
                   ? "Updating..."
-                  : `${companyToUpdateStatus.status === "ACTIVE" ? "Deactivate" : "Activate"} Company`
+                  : `${dealerToUpdateStatus.status === "ACTIVE" ? "Deactivate" : "Activate"} Dealer`
                 }
               </Button>
             </div>
@@ -767,18 +767,17 @@ const CompaniesPage = () => {
             <div className="flex items-center gap-4">
               <div>
                 <Title level={3} className="!mb-0 text-gray-900">
-                  Companies
+                  Dealers
                 </Title>
               </div>
-
             </div>
             <div className="flex items-center gap-3">
               <Button
                 type="primary"
-                onClick={handleAddCompany}
-                className="bg-blue-600 hover:bg-blue-700 border-blue-600 hover:border-blue-700"
+                onClick={handleAddDealer}
+                className="bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
               >
-                Add Company
+                Add Dealer
               </Button>
             </div>
           </div>
@@ -789,7 +788,7 @@ const CompaniesPage = () => {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Search companies..."
+                placeholder="Search dealers..."
                 prefix={<SearchOutlined />}
                 value={globalFilter ?? ""}
                 onChange={(e) => handleSearch(e.target.value)}
@@ -850,8 +849,8 @@ const CompaniesPage = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {isLoading && (
             <div className="flex items-center justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-3 text-gray-600">Loading companies...</span>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+              <span className="ml-3 text-gray-600">Loading dealers...</span>
             </div>
           )}
           {!isLoading && (
@@ -870,7 +869,7 @@ const CompaniesPage = () => {
                             <div
                               {...{
                                 className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none hover:text-blue-600 transition-colors duration-200 flex items-center gap-2"
+                                  ? "cursor-pointer select-none hover:text-orange-600 transition-colors duration-200 flex items-center gap-2"
                                   : "flex items-center gap-2",
                                 onClick: header.column.getToggleSortingHandler(),
                               }}
@@ -896,7 +895,7 @@ const CompaniesPage = () => {
                   {table.getRowModel().rows.map((row, index) => (
                     <tr
                       key={row.id}
-                      className={`transition-colors duration-200 hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                      className={`transition-colors duration-200 hover:bg-orange-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                         }`}
                     >
                       {row.getVisibleCells().map((cell) => (
@@ -914,8 +913,8 @@ const CompaniesPage = () => {
 
               {filteredData.length === 0 && !isLoading && (
                 <div className="text-center py-12">
-                  <div className="text-gray-400 text-6xl mb-4">📊</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No companies found</h3>
+                  <div className="text-gray-400 text-6xl mb-4">🏪</div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No dealers found</h3>
                   <p className="text-gray-500">Try adjusting your search or filter criteria</p>
                 </div>
               )}
@@ -929,10 +928,10 @@ const CompaniesPage = () => {
               <span className="font-medium">
                 {Math.min(
                   (pagination.pageIndex + 1) * pagination.pageSize,
-                  companiesData?.total || 0
+                  dealersData?.total || 0
                 )}
               </span>{" "}
-              of <span className="font-medium">{companiesData?.total || 0}</span> companies
+              of <span className="font-medium">{dealersData?.total || 0}</span> dealers
             </div>
 
             <div className="flex items-center space-x-2">
@@ -955,7 +954,7 @@ const CompaniesPage = () => {
 
               <span className="flex items-center gap-2 px-3 py-1 bg-white rounded border">
                 <span className="text-sm">Page</span>
-                <span className="font-semibold text-blue-600">
+                <span className="font-semibold text-orange-600">
                   {table.getState().pagination.pageIndex + 1}
                 </span>
                 <span className="text-sm">of</span>
@@ -988,4 +987,4 @@ const CompaniesPage = () => {
   );
 };
 
-export default CompaniesPage;
+export default DealersPage;

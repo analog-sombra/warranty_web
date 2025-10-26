@@ -1,26 +1,31 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useForm, FormProvider } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useForm, FormProvider, Controller } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Typography, Spin } from "antd";
+import { Button, Typography, Spin, Input } from "antd";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
 import { TextInput } from "@/components/form/inputfields/textinput";
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { onFormError } from "@/utils/methods";
-import { object, string, pipe, InferInput } from "valibot";
+import { object, string, pipe, InferInput, minLength, maxLength, regex } from "valibot";
 import { toast } from "react-toastify";
 
 const { Title } = Typography;
 
 // Validation Schema
 const UpdateUserSchema = object({
-  name: pipe(string("Enter User Name")),
-  contact1: pipe(string("Enter Contact Number")),
-  role: pipe(string("Select Role")),
+  name: pipe(string("Enter User Name"), minLength(2, "Name must be at least 2 characters")),
+  contact1: pipe(
+    string("Enter Contact Number"),
+    minLength(10, "Contact number must be 10 digits"),
+    maxLength(10, "Contact number must be 10 digits"),
+    regex(/^[0-9]+$/, "Contact number must contain only digits")
+  ),
+  role: pipe(string("Select Role"), minLength(1, "Please select a role")),
 });
 
 type UpdateUserForm = InferInput<typeof UpdateUserSchema>;
@@ -75,21 +80,20 @@ const GET_USER_BY_ID = `
 `;
 
 const UPDATE_USER = `
-  mutation UpdateUser($updateUserId: Int!, $updateUserInput: UpdateUserInput!) {
-    updateUser(id: $updateUserId, updateUserInput: $updateUserInput) {
+  mutation UpdateUser($updateUserId: Int!, $updateType: UpdateUserInput!) {
+    updateUser(id: $updateUserId, updateType: $updateType) {
       id
       name
     }
   }
 `;
 
-// Role options
+// Role options for dealers
 const ROLE_OPTIONS = [
-  { label: "Admin", value: "MANUF_ADMIN" },
-  { label: "Accounts", value: "MANUF_ACCOUNTS" },
-  { label: "Manager", value: "MANUF_MANAGER" },
-  { label: "Sales", value: "MANUF_SALES" },
-  { label: "Technical", value: "MANUF_TECHNICAL" },
+  { label: "Admin", value: "DEALER_ADMIN" },
+  { label: "Accounts", value: "DEALER_ACCOUNTS" },
+  { label: "Manager", value: "DEALER_MANAGER" },
+  { label: "Sales", value: "DEALER_SALES" },
 ];
 
 const fetchUserById = async (userId: number): Promise<User> => {
@@ -112,7 +116,7 @@ const updateUserApi = async (userId: number, input: any): Promise<any> => {
     query: UPDATE_USER,
     variables: {
       updateUserId: userId,
-      updateUserInput: input,
+      updateType: input,
     },
   });
 
@@ -123,11 +127,18 @@ const updateUserApi = async (userId: number, input: any): Promise<any> => {
   return response.data.updateUser;
 };
 
-const EditUserPage = () => {
+interface EditUserPageProps {
+  params: Promise<{
+    id: string;
+    userId: string;
+  }>;
+}
+
+const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
   const router = useRouter();
-  const params = useParams();
-  const companyId = parseInt(params.id as string);
-  const userId = parseInt(params.userId as string);
+  const unwrappedParams = React.use(params) as { id: string; userId: string };
+  const dealerId = parseInt(unwrappedParams.id);
+  const userId = parseInt(unwrappedParams.userId);
 
   const methods = useForm<UpdateUserForm>({
     resolver: valibotResolver(UpdateUserSchema),
@@ -136,6 +147,7 @@ const EditUserPage = () => {
       contact1: "",
       role: "",
     },
+    mode: "onChange", // Enable real-time validation
   });
 
   // Fetch user data
@@ -150,7 +162,7 @@ const EditUserPage = () => {
     mutationFn: (input: any) => updateUserApi(userId, input),
     onSuccess: () => {
       toast.success("User updated successfully!");
-      router.push(`/admin/companies/${companyId}/users`);
+      router.push(`/admin/dealers/${dealerId}/users`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to update user: ${error.message}`);
@@ -177,21 +189,20 @@ const EditUserPage = () => {
     }
 
     const input = {
-      name: data.name,
-      contact1: data.contact1,
+      name: data.name.trim(),
+      contact1: data.contact1.toString().trim(),
       role: data.role,
-      updatedById: parseInt(currentUserId.toString()),
     };
 
     updateMutation.mutate(input);
   };
 
   const handleCancel = () => {
-    router.push(`/admin/companies/${companyId}/users`);
+    router.push(`/admin/dealers/${dealerId}/users`);
   };
 
   const getRoleDisplayName = (role: string) => {
-    return role.replace("MANUF_", "");
+    return role.replace("DEALER_", "");
   };
 
   if (isUserLoading) {
@@ -239,10 +250,10 @@ const EditUserPage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* User Information */}
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm xl:col-span-2">
-                  <div className="bg-blue-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                    <h2 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+                  <div className="bg-orange-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                    <h2 className="text-lg font-semibold text-orange-900 flex items-center gap-2">
                       <svg
-                        className="w-5 h-5 text-blue-600"
+                        className="w-5 h-5 text-orange-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -256,35 +267,79 @@ const EditUserPage = () => {
                       </svg>
                       User Information
                     </h2>
-                    <p className="text-blue-700 text-sm mt-1">
+                    <p className="text-orange-700 text-sm mt-1">
                       Basic user details and contact information
                     </p>
                   </div>
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <TextInput<UpdateUserForm>
-                        title="Full Name"
-                        required={true}
-                        name="name"
-                        placeholder="Enter user's full name"
-                      />
-                      <TextInput<UpdateUserForm>
-                        title="Primary Contact"
-                        required={true}
-                        name="contact1"
-                        placeholder="Enter contact number"
-                        onlynumber={true}
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Full Name Input */}
+                      <div className="flex flex-col">
+                        <label className="text-sm font-normal mb-2 block">
+                          Full Name
+                          <span className="text-rose-500">*</span>
+                        </label>
+                        <Controller
+                          control={methods.control}
+                          name="name"
+                          render={({ field, fieldState: { error } }: any) => (
+                            <div className="w-full">
+                              <Input
+                                {...field}
+                                status={error ? "error" : undefined}
+                                className="w-full"
+                                placeholder="Enter user's full name"
+                                size="large"
+                              />
+                              {error && (
+                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                              )}
+                            </div>
+                          )}
+                        />
+                      </div>
+                      
+                      {/* Primary Contact Input */}
+                      <div className="flex flex-col">
+                        <label className="text-sm font-normal mb-2 block">
+                          Primary Contact
+                          <span className="text-rose-500">*</span>
+                        </label>
+                        <Controller
+                          control={methods.control}
+                          name="contact1"
+                          render={({ field, fieldState: { error } }: any) => (
+                            <div className="w-full">
+                              <Input
+                                {...field}
+                                status={error ? "error" : undefined}
+                                className="w-full"
+                                placeholder="Enter contact number (10 digits)"
+                                maxLength={10}
+                                size="large"
+                                onChange={(e: any) => {
+                                  // Only allow numbers
+                                  const value = e.target.value.replace(/[^0-9]/g, "");
+                                  field.onChange(value);
+                                }}
+                              />
+                              {error && (
+                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                              )}
+                            </div>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Role Information */}
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm">
-                  <div className="bg-green-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                    <h2 className="text-lg font-semibold text-green-900 flex items-center gap-2">
+                  <div className="bg-purple-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                    <h2 className="text-lg font-semibold text-purple-900 flex items-center gap-2">
                       <svg
-                        className="w-5 h-5 text-green-600"
+                        className="w-5 h-5 text-purple-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -298,7 +353,7 @@ const EditUserPage = () => {
                       </svg>
                       Role Assignment
                     </h2>
-                    <p className="text-green-700 text-sm mt-1">
+                    <p className="text-purple-700 text-sm mt-1">
                       Update user role and permissions
                     </p>
                   </div>
@@ -348,10 +403,10 @@ const EditUserPage = () => {
               {/* Current User Details */}
               {userData && (
                 <div className="bg-white border border-gray-300 rounded-lg shadow-sm">
-                  <div className="bg-purple-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
-                    <h2 className="text-lg font-semibold text-purple-900 flex items-center gap-2">
+                  <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                       <svg
-                        className="w-5 h-5 text-purple-600"
+                        className="w-5 h-5 text-gray-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -365,7 +420,7 @@ const EditUserPage = () => {
                       </svg>
                       Current User Details
                     </h2>
-                    <p className="text-purple-700 text-sm mt-1">
+                    <p className="text-gray-700 text-sm mt-1">
                       Additional information about this user (read-only)
                     </p>
                   </div>
@@ -411,6 +466,70 @@ const EditUserPage = () => {
                 </div>
               )}
 
+              {/* Role Description Card */}
+              <div className="bg-white border border-gray-300 rounded-lg shadow-sm">
+                <div className="bg-blue-50 border-b border-gray-200 px-6 py-4 rounded-t-lg">
+                  <h2 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    Dealer Role Descriptions
+                  </h2>
+                  <p className="text-blue-700 text-sm mt-1">
+                    Understanding different dealer user roles and their responsibilities
+                  </p>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-purple-600 font-semibold">👑 Admin</span>
+                      </div>
+                      <p className="text-purple-700 text-sm">
+                        Full dealer system access, user management, and administrative privileges
+                      </p>
+                    </div>
+
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-green-600 font-semibold">💰 Accounts</span>
+                      </div>
+                      <p className="text-green-700 text-sm">
+                        Financial operations, dealer billing, and accounting management
+                      </p>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-blue-600 font-semibold">👥 Manager</span>
+                      </div>
+                      <p className="text-blue-700 text-sm">
+                        Dealer operations management, inventory oversight, and team coordination
+                      </p>
+                    </div>
+
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-orange-600 font-semibold">📈 Sales</span>
+                      </div>
+                      <p className="text-orange-700 text-sm">
+                        Customer relationships, sales operations, and warranty processing
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Action Buttons */}
               <div className="flex gap-4 justify-end pt-6 border-t border-gray-200">
                 <Button
@@ -427,7 +546,7 @@ const EditUserPage = () => {
                   htmlType="submit"
                   size="large"
                   loading={updateMutation.isPending}
-                  className="px-8 bg-blue-600 hover:bg-blue-700 border-blue-600 hover:border-blue-700"
+                  className="px-8 bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
                 >
                   {updateMutation.isPending ? (
                     <div className="flex items-center gap-2">
@@ -461,4 +580,4 @@ const EditUserPage = () => {
   );
 };
 
-export default EditUserPage;
+export default EditDealerUserPage;
