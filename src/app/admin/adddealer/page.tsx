@@ -11,6 +11,7 @@ import { AddCompanyForm, AddCompanySchema } from "@/schema/addcomplany";
 import { TextInput } from "@/components/form/inputfields/textinput";
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { getCookie } from "cookies-next/client";
+import React from "react";
 
 const AddDealerPage = () => {
   const router = useRouter();
@@ -83,11 +84,12 @@ const AddDealerPage = () => {
     queryKey: ["zonedata"],
     queryFn: async () => {
       const response = await ApiCall({
-        query: "query GetAllZone($whereSearchInput: WhereZoneSearchInput!) {getAllZone(whereSearchInput: $whereSearchInput) {id, name}}",
+        query:
+          "query GetAllZone($whereSearchInput: WhereZoneSearchInput!) {getAllZone(whereSearchInput: $whereSearchInput) {id, name}}",
         variables: {
           whereSearchInput: {
-            status: "ACTIVE"
-          }
+            status: "ACTIVE",
+          },
         },
       });
 
@@ -122,9 +124,7 @@ const AddDealerPage = () => {
   return (
     <div className="h-full bg-white p-4 pt-8">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">
-          Add New Dealer
-        </h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-2">Add New Dealer</h1>
         <p className="text-gray-600 text-sm">
           Fill in the details to register a new dealer
         </p>
@@ -175,9 +175,9 @@ const AddDealerPage = () => {
                     options={
                       zonedata.data
                         ? zonedata.data.map((zone) => ({
-                          label: zone.name,
-                          value: zone.id.toString(),
-                        }))
+                            label: zone.name,
+                            value: zone.id.toString(),
+                          }))
                         : []
                     }
                     placeholder="Select zone"

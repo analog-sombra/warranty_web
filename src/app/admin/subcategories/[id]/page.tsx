@@ -9,7 +9,6 @@ import { Button, Typography, Spin, Input, Select } from "antd";
 import { toast } from "react-toastify";
 
 const { Title } = Typography;
-const { Option } = Select;
 
 // Types
 interface Subcategory {

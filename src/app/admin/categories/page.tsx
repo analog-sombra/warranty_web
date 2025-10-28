@@ -22,7 +22,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 // Try importing icons differently
-let SearchOutlined: any, ReloadOutlined: any, MoreOutlined: any, EditOutlined: any, DeleteOutlined: any;
+let SearchOutlined: any,
+  ReloadOutlined: any,
+  MoreOutlined: any,
+  EditOutlined: any,
+  DeleteOutlined: any;
 try {
   const icons = require("@ant-design/icons");
   SearchOutlined = icons.SearchOutlined;
@@ -30,7 +34,7 @@ try {
   MoreOutlined = icons.MoreOutlined;
   EditOutlined = icons.EditOutlined;
   DeleteOutlined = icons.DeleteOutlined;
-} catch (e) {
+} catch {
   // Fallback if icons don't load
   SearchOutlined = () => "🔍";
   ReloadOutlined = () => "🔄";
@@ -65,11 +69,6 @@ interface SearchPaginationInput {
   skip: number;
   take: number;
   search?: string;
-}
-
-interface UpdateCategoryInput {
-  status: "ACTIVE" | "INACTIVE";
-  updatedById: number;
 }
 
 // GraphQL queries
@@ -116,7 +115,9 @@ const CREATE_PRODUCT_CATEGORY = `
 `;
 
 // API functions
-const fetchCategories = async (input: SearchPaginationInput): Promise<{
+const fetchCategories = async (
+  input: SearchPaginationInput
+): Promise<{
   skip: number;
   take: number;
   total: number;
@@ -127,7 +128,6 @@ const fetchCategories = async (input: SearchPaginationInput): Promise<{
     variables: {
       searchPaginationInput: input,
       whereSearchInput: {},
-
     },
   });
 
@@ -138,7 +138,10 @@ const fetchCategories = async (input: SearchPaginationInput): Promise<{
   return response.data.getPaginatedProductCategory;
 };
 
-const deleteCategoryApi = async (categoryId: number, userId: number): Promise<{ id: number }> => {
+const deleteCategoryApi = async (
+  categoryId: number,
+  userId: number
+): Promise<{ id: number }> => {
   const response = await ApiCall<{ deleteProductCategory: { id: number } }>({
     query: DELETE_CATEGORY,
     variables: {
@@ -177,7 +180,10 @@ const updateCategoryStatusApi = async (
   return response.data.updateProductCategory;
 };
 
-const createCategoryApi = async (name: string, createdById: number): Promise<{ id: number }> => {
+const createCategoryApi = async (
+  name: string,
+  createdById: number
+): Promise<{ id: number }> => {
   const response = await ApiCall<{ createProductCategory: { id: number } }>({
     query: CREATE_PRODUCT_CATEGORY,
     variables: {
@@ -202,7 +208,9 @@ const CategoriesPage = () => {
 
   // State management
   const [globalFilter, setGlobalFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -210,9 +218,12 @@ const CategoriesPage = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null
+  );
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [categoryToUpdateStatus, setCategoryToUpdateStatus] = useState<Category | null>(null);
+  const [categoryToUpdateStatus, setCategoryToUpdateStatus] =
+    useState<Category | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
 
@@ -241,9 +252,14 @@ const CategoriesPage = () => {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: ({ categoryId, userId }: { categoryId: number; userId: number }) =>
-      deleteCategoryApi(categoryId, userId),
-    onSuccess: (data, variables) => {
+    mutationFn: ({
+      categoryId,
+      userId,
+    }: {
+      categoryId: number;
+      userId: number;
+    }) => deleteCategoryApi(categoryId, userId),
+    onSuccess: () => {
       toast.success(`Category deleted successfully`);
       // Invalidate and refetch categories data
       queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -258,11 +274,11 @@ const CategoriesPage = () => {
     mutationFn: ({
       categoryId,
       status,
-      updatedById
+      updatedById,
     }: {
       categoryId: number;
       status: "ACTIVE" | "INACTIVE";
-      updatedById: number
+      updatedById: number;
     }) => updateCategoryStatusApi(categoryId, status, updatedById),
     onSuccess: (data, variables) => {
       const statusText = variables.status.toLowerCase();
@@ -277,9 +293,14 @@ const CategoriesPage = () => {
 
   // Create category mutation
   const createCategoryMutation = useMutation({
-    mutationFn: ({ name, createdById }: { name: string; createdById: number }) =>
-      createCategoryApi(name, createdById),
-    onSuccess: (data) => {
+    mutationFn: ({
+      name,
+      createdById,
+    }: {
+      name: string;
+      createdById: number;
+    }) => createCategoryApi(name, createdById),
+    onSuccess: () => {
       toast.success(`Category "${categoryName}" created successfully!`);
       setIsCategoryModalOpen(false);
       setCategoryName("");
@@ -312,8 +333,12 @@ const CategoriesPage = () => {
               </span>
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{info.getValue()}</div>
-              <div className="text-xs text-gray-500">ID: {info.row.original.id}</div>
+              <div className="font-semibold text-gray-900">
+                {info.getValue()}
+              </div>
+              <div className="text-xs text-gray-500">
+                ID: {info.row.original.id}
+              </div>
             </div>
           </div>
         ),
@@ -339,12 +364,18 @@ const CategoriesPage = () => {
 
           return (
             <div className="flex items-center gap-2">
-              <div className={`flex items-center px-3 py-1 rounded-full text-xs font-semibold ${status === "ACTIVE"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-                }`}>
-                <div className={`w-2 h-2 rounded-full mr-2 ${status === "ACTIVE" ? "bg-green-400" : "bg-red-400"
-                  }`}></div>
+              <div
+                className={`flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                  status === "ACTIVE"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 ${
+                    status === "ACTIVE" ? "bg-green-400" : "bg-red-400"
+                  }`}
+                ></div>
                 {status}
               </div>
               <Button
@@ -352,11 +383,14 @@ const CategoriesPage = () => {
                 size="small"
                 loading={isUpdating}
                 onClick={() => handleStatusToggle(category)}
-                className={`hover:scale-105 transition-transform duration-200 ${status === "ACTIVE"
-                  ? "text-red-600 hover:bg-red-50"
-                  : "text-green-600 hover:bg-green-50"
-                  }`}
-                title={`Click to ${status === "ACTIVE" ? "deactivate" : "activate"} category`}
+                className={`hover:scale-105 transition-transform duration-200 ${
+                  status === "ACTIVE"
+                    ? "text-red-600 hover:bg-red-50"
+                    : "text-green-600 hover:bg-green-50"
+                }`}
+                title={`Click to ${
+                  status === "ACTIVE" ? "deactivate" : "activate"
+                } category`}
               >
                 {status === "ACTIVE" ? "📴" : "✅"}
               </Button>
@@ -387,7 +421,7 @@ const CategoriesPage = () => {
                 menu={{
                   items: getActionMenuItems(category),
                 }}
-                trigger={['click']}
+                trigger={["click"]}
                 placement="bottomRight"
               >
                 <Button
@@ -414,7 +448,9 @@ const CategoriesPage = () => {
     let filtered = [...categoriesData.data];
 
     if (statusFilter && statusFilter !== "all") {
-      filtered = filtered.filter((category) => category.status === statusFilter);
+      filtered = filtered.filter(
+        (category) => category.status === statusFilter
+      );
     }
 
     return filtered;
@@ -424,7 +460,9 @@ const CategoriesPage = () => {
   const table = useReactTable({
     data: filteredData,
     columns,
-    pageCount: categoriesData ? Math.ceil(categoriesData.total / pagination.pageSize) : -1,
+    pageCount: categoriesData
+      ? Math.ceil(categoriesData.total / pagination.pageSize)
+      : -1,
     state: {
       sorting,
       columnFilters,
@@ -533,7 +571,8 @@ const CategoriesPage = () => {
       return;
     }
 
-    const newStatus = categoryToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const newStatus =
+      categoryToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
     statusUpdateMutation.mutate(
       {
@@ -592,15 +631,19 @@ const CategoriesPage = () => {
   // Get action menu items for each row
   const getActionMenuItems = (category: Category) => [
     {
-      key: 'edit',
+      key: "edit",
       icon: <EditOutlined />,
-      label: 'Edit',
+      label: "Edit",
       onClick: () => handleEdit(category),
     },
     {
-      key: 'delete',
-      icon: deleteMutation.isPending ? <span className="animate-spin">⏳</span> : <DeleteOutlined />,
-      label: deleteMutation.isPending ? 'Deleting...' : 'Delete',
+      key: "delete",
+      icon: deleteMutation.isPending ? (
+        <span className="animate-spin">⏳</span>
+      ) : (
+        <DeleteOutlined />
+      ),
+      label: deleteMutation.isPending ? "Deleting..." : "Delete",
       danger: true,
       disabled: deleteMutation.isPending,
       onClick: () => handleDelete(category),
@@ -633,7 +676,9 @@ const CategoriesPage = () => {
             <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
               <span className="text-emerald-600 text-lg">📁</span>
             </div>
-            <span className="text-lg font-semibold text-gray-900">Create New Category</span>
+            <span className="text-lg font-semibold text-gray-900">
+              Create New Category
+            </span>
           </div>
         }
         open={isCategoryModalOpen}
@@ -666,9 +711,13 @@ const CategoriesPage = () => {
                 <div className="flex items-start gap-2">
                   <span className="text-emerald-500 text-lg">ℹ️</span>
                   <div>
-                    <p className="text-emerald-800 font-medium text-sm">Category Settings</p>
+                    <p className="text-emerald-800 font-medium text-sm">
+                      Category Settings
+                    </p>
                     <p className="text-emerald-700 text-sm mt-1">
-                      This category will be created with <strong>Priority 1</strong> and will be immediately available for product assignment.
+                      This category will be created with{" "}
+                      <strong>Priority 1</strong> and will be immediately
+                      available for product assignment.
                     </p>
                   </div>
                 </div>
@@ -692,7 +741,9 @@ const CategoriesPage = () => {
               className="bg-emerald-600 hover:bg-emerald-700 border-emerald-600 hover:border-emerald-700"
               icon={createCategoryMutation.isPending ? null : "📁"}
             >
-              {createCategoryMutation.isPending ? "Creating..." : "Create Category"}
+              {createCategoryMutation.isPending
+                ? "Creating..."
+                : "Create Category"}
             </Button>
           </div>
         </div>
@@ -705,7 +756,9 @@ const CategoriesPage = () => {
             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
               <DeleteOutlined className="text-red-600 text-lg" />
             </div>
-            <span className="text-lg font-semibold text-gray-900">Delete Category</span>
+            <span className="text-lg font-semibold text-gray-900">
+              Delete Category
+            </span>
           </div>
         }
         open={isDeleteModalOpen}
@@ -728,9 +781,12 @@ const CategoriesPage = () => {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{categoryToDelete.name}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {categoryToDelete.name}
+                    </h4>
                     <p className="text-sm text-gray-500">
-                      ID: {categoryToDelete.id} • Priority: {categoryToDelete.priority}
+                      ID: {categoryToDelete.id} • Priority:{" "}
+                      {categoryToDelete.priority}
                     </p>
                   </div>
                 </div>
@@ -741,7 +797,8 @@ const CategoriesPage = () => {
                   <div>
                     <p className="text-red-800 font-medium text-sm">Warning</p>
                     <p className="text-red-700 text-sm">
-                      This action cannot be undone. All subcategories and products associated with this category may be affected.
+                      This action cannot be undone. All subcategories and
+                      products associated with this category may be affected.
                     </p>
                   </div>
                 </div>
@@ -775,16 +832,22 @@ const CategoriesPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${categoryToUpdateStatus?.status === "ACTIVE"
-              ? "bg-red-100"
-              : "bg-green-100"
-              }`}>
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                categoryToUpdateStatus?.status === "ACTIVE"
+                  ? "bg-red-100"
+                  : "bg-green-100"
+              }`}
+            >
               <span className="text-lg">
                 {categoryToUpdateStatus?.status === "ACTIVE" ? "📴" : "✅"}
               </span>
             </div>
             <span className="text-lg font-semibold text-gray-900">
-              {categoryToUpdateStatus?.status === "ACTIVE" ? "Deactivate" : "Activate"} Category
+              {categoryToUpdateStatus?.status === "ACTIVE"
+                ? "Deactivate"
+                : "Activate"}{" "}
+              Category
             </span>
           </div>
         }
@@ -800,7 +863,9 @@ const CategoriesPage = () => {
               <p className="text-gray-700 mb-2">
                 Are you sure you want to{" "}
                 <strong>
-                  {categoryToUpdateStatus.status === "ACTIVE" ? "deactivate" : "activate"}
+                  {categoryToUpdateStatus.status === "ACTIVE"
+                    ? "deactivate"
+                    : "activate"}
                 </strong>{" "}
                 the category:
               </p>
@@ -812,37 +877,52 @@ const CategoriesPage = () => {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{categoryToUpdateStatus.name}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {categoryToUpdateStatus.name}
+                    </h4>
                     <p className="text-sm text-gray-500">
-                      ID: {categoryToUpdateStatus.id} • Priority: {categoryToUpdateStatus.priority}
+                      ID: {categoryToUpdateStatus.id} • Priority:{" "}
+                      {categoryToUpdateStatus.priority}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className={`mt-4 p-3 rounded-lg border ${categoryToUpdateStatus.status === "ACTIVE"
-                ? "bg-red-50 border-red-200"
-                : "bg-green-50 border-green-200"
-                }`}>
+              <div
+                className={`mt-4 p-3 rounded-lg border ${
+                  categoryToUpdateStatus.status === "ACTIVE"
+                    ? "bg-red-50 border-red-200"
+                    : "bg-green-50 border-green-200"
+                }`}
+              >
                 <div className="flex items-start gap-2">
                   <span className="text-lg">
                     {categoryToUpdateStatus.status === "ACTIVE" ? "⚠️" : "ℹ️"}
                   </span>
                   <div>
-                    <p className={`font-medium text-sm ${categoryToUpdateStatus.status === "ACTIVE"
-                      ? "text-red-800"
-                      : "text-green-800"
-                      }`}>
+                    <p
+                      className={`font-medium text-sm ${
+                        categoryToUpdateStatus.status === "ACTIVE"
+                          ? "text-red-800"
+                          : "text-green-800"
+                      }`}
+                    >
                       Status Change
                     </p>
-                    <p className={`text-sm ${categoryToUpdateStatus.status === "ACTIVE"
-                      ? "text-red-700"
-                      : "text-green-700"
-                      }`}>
+                    <p
+                      className={`text-sm ${
+                        categoryToUpdateStatus.status === "ACTIVE"
+                          ? "text-red-700"
+                          : "text-green-700"
+                      }`}
+                    >
                       This will change the category status from{" "}
                       <strong>{categoryToUpdateStatus.status}</strong> to{" "}
                       <strong>
-                        {categoryToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"}
-                      </strong>.
+                        {categoryToUpdateStatus.status === "ACTIVE"
+                          ? "INACTIVE"
+                          : "ACTIVE"}
+                      </strong>
+                      .
                     </p>
                   </div>
                 </div>
@@ -867,14 +947,21 @@ const CategoriesPage = () => {
                     ? "bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                     : "bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700"
                 }
-                icon={statusUpdateMutation.isPending ? null : (
-                  categoryToUpdateStatus.status === "ACTIVE" ? "📴" : "✅"
-                )}
+                icon={
+                  statusUpdateMutation.isPending
+                    ? null
+                    : categoryToUpdateStatus.status === "ACTIVE"
+                    ? "📴"
+                    : "✅"
+                }
               >
                 {statusUpdateMutation.isPending
                   ? "Updating..."
-                  : `${categoryToUpdateStatus.status === "ACTIVE" ? "Deactivate" : "Activate"} Category`
-                }
+                  : `${
+                      categoryToUpdateStatus.status === "ACTIVE"
+                        ? "Deactivate"
+                        : "Activate"
+                    } Category`}
               </Button>
             </div>
           </div>
@@ -920,7 +1007,9 @@ const CategoriesPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Status:</span>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Status:
+              </span>
               <Select
                 placeholder="All"
                 className="w-32"
@@ -936,11 +1025,17 @@ const CategoriesPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Show:</span>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Show:
+              </span>
               <Select
                 value={pagination.pageSize}
                 onChange={(value) => {
-                  setPagination({ ...pagination, pageSize: value, pageIndex: 0 });
+                  setPagination({
+                    ...pagination,
+                    pageSize: value,
+                    pageIndex: 0,
+                  });
                 }}
                 className="w-20"
                 size="large"
@@ -979,7 +1074,10 @@ const CategoriesPage = () => {
               <table className="w-full border-collapse">
                 <thead>
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id} className="bg-gray-50 border-b border-gray-200">
+                    <tr
+                      key={headerGroup.id}
+                      className="bg-gray-50 border-b border-gray-200"
+                    >
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
@@ -992,7 +1090,8 @@ const CategoriesPage = () => {
                                 className: header.column.getCanSort()
                                   ? "cursor-pointer select-none hover:text-emerald-600 transition-colors duration-200 flex items-center gap-2"
                                   : "flex items-center gap-2",
-                                onClick: header.column.getToggleSortingHandler(),
+                                onClick:
+                                  header.column.getToggleSortingHandler(),
                               }}
                             >
                               {flexRender(
@@ -1016,11 +1115,15 @@ const CategoriesPage = () => {
                   {table.getRowModel().rows.map((row, index) => (
                     <tr
                       key={row.id}
-                      className={`transition-colors duration-200 hover:bg-emerald-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                        }`}
+                      className={`transition-colors duration-200 hover:bg-emerald-50 ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -1035,8 +1138,12 @@ const CategoriesPage = () => {
               {filteredData.length === 0 && !isLoading && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 text-6xl mb-4">📁</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
-                  <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No categories found
+                  </h3>
+                  <p className="text-gray-500">
+                    Try adjusting your search or filter criteria
+                  </p>
                 </div>
               )}
             </div>
@@ -1045,14 +1152,20 @@ const CategoriesPage = () => {
           {/* Pagination */}
           <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">{pagination.pageIndex * pagination.pageSize + 1}</span> to{" "}
+              Showing{" "}
+              <span className="font-medium">
+                {pagination.pageIndex * pagination.pageSize + 1}
+              </span>{" "}
+              to{" "}
               <span className="font-medium">
                 {Math.min(
                   (pagination.pageIndex + 1) * pagination.pageSize,
                   categoriesData?.total || 0
                 )}
               </span>{" "}
-              of <span className="font-medium">{categoriesData?.total || 0}</span> categories
+              of{" "}
+              <span className="font-medium">{categoriesData?.total || 0}</span>{" "}
+              categories
             </div>
 
             <div className="flex items-center space-x-2">
@@ -1079,9 +1192,7 @@ const CategoriesPage = () => {
                   {table.getState().pagination.pageIndex + 1}
                 </span>
                 <span className="text-sm">of</span>
-                <span className="font-semibold">
-                  {table.getPageCount()}
-                </span>
+                <span className="font-semibold">{table.getPageCount()}</span>
               </span>
 
               <Button

@@ -293,7 +293,7 @@ const SubcategoriesPage = () => {
   const deleteMutation = useMutation({
     mutationFn: ({ subcategoryId, userId }: { subcategoryId: number; userId: number }) =>
       deleteSubcategoryApi(subcategoryId, userId),
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       toast.success(`Subcategory deleted successfully`);
       // Invalidate and refetch subcategories data
       queryClient.invalidateQueries({ queryKey: ["subcategories"] });

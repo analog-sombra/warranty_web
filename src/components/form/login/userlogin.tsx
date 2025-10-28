@@ -1,5 +1,10 @@
 "use client";
-import { UserLoginForm, UserLoginSchema, VerifyOtpForm, VerifyOtpSchema } from "@/schema/userlogin";
+import {
+  UserLoginForm,
+  UserLoginSchema,
+  VerifyOtpForm,
+  VerifyOtpSchema,
+} from "@/schema/userlogin";
 import { FormProvider, useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { onFormError } from "@/utils/methods";
@@ -9,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { toast } from "react-toastify";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const UserLoginPage = () => {
   const router = useRouter();
@@ -43,7 +48,7 @@ const UserLoginPage = () => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   type LoginResponse = {
@@ -111,7 +116,9 @@ const UserLoginPage = () => {
       if (!(response.data as Record<string, unknown>)["verifyOtp"]) {
         throw new Error("Invalid OTP");
       }
-      return (response.data as Record<string, unknown>)["verifyOtp"] as LoginResponse;
+      return (response.data as Record<string, unknown>)[
+        "verifyOtp"
+      ] as LoginResponse;
     },
 
     onSuccess: (data) => {
@@ -234,7 +241,10 @@ const UserLoginPage = () => {
         <div className="text-center">
           {timer > 0 ? (
             <p className="text-sm text-gray-600">
-              Resend OTP in <span className="font-semibold text-blue-600">{formatTime(timer)}</span>
+              Resend OTP in{" "}
+              <span className="font-semibold text-blue-600">
+                {formatTime(timer)}
+              </span>
             </p>
           ) : (
             <button

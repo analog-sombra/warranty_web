@@ -10,6 +10,7 @@ import { AddUserForm, AddUserSchema } from "@/schema/adduser";
 import { TextInput } from "./inputfields/textinput";
 import { MultiSelect } from "./inputfields/multiselect";
 import { PasswordInput } from "./inputfields/passwordinput";
+import React from "react";
 
 const AddUserPage = () => {
   const router = useRouter();

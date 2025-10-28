@@ -1,3 +1,4 @@
+import React from "react";
 import { Input } from "antd";
 import { Controller, FieldValues, Path, useFormContext } from "react-hook-form";
 
@@ -44,7 +45,7 @@ export function TextInput<T extends FieldValues>(props: TextInputProps<T>) {
             maxLength={props.maxlength ?? undefined}
             status={error ? "error" : undefined}
             className="w-full"
-            value={props.onlynumber ? (field.value === 0 ? "0" : field.value?.toString() || "") : field.value}
+            value={props.onlynumber ? (field.value || "") : field.value}
             disabled={props.disable ?? false}
             onChange={(e) => {
               if (!e) return;
@@ -56,8 +57,8 @@ export function TextInput<T extends FieldValues>(props: TextInputProps<T>) {
 
               if (props.onlynumber) {
                 value = value.replace(/[^0-9]/g, "");
-                // Convert to number for onlynumber fields, but keep as string if empty
-                field.onChange(value === "" ? "" : parseInt(value, 10) || 0);
+                // Keep as string for onlynumber fields to maintain string validation
+                field.onChange(value);
                 return;
               }
               

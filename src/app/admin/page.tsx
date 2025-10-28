@@ -53,7 +53,10 @@ interface Category {
 }
 
 // API functions
-const createCategoryApi = async (name: string, createdById: number): Promise<{ id: number }> => {
+const createCategoryApi = async (
+  name: string,
+  createdById: number
+): Promise<{ id: number }> => {
   const response = await ApiCall<{ createProductCategory: { id: number } }>({
     query: CREATE_PRODUCT_CATEGORY,
     variables: {
@@ -101,10 +104,11 @@ const fetchCategoriesApi = async (): Promise<Category[]> => {
     query: GET_ALL_CATEGORIES,
     variables: {
       whereSearchInput: {
-        status: "ACTIVE"
-      }
+        status: "ACTIVE",
+      },
     },
-  });  if (!response.status) {
+  });
+  if (!response.status) {
     throw new Error(response.message);
   }
 
@@ -117,7 +121,9 @@ const Dashboard = () => {
   const [categoryName, setCategoryName] = useState("");
   const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
   const [subcategoryName, setSubcategoryName] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    number | undefined
+  >(undefined);
 
   // Fetch categories for subcategory dropdown
   const {
@@ -132,9 +138,14 @@ const Dashboard = () => {
 
   // Create category mutation
   const createCategoryMutation = useMutation({
-    mutationFn: ({ name, createdById }: { name: string; createdById: number }) =>
-      createCategoryApi(name, createdById),
-    onSuccess: (data) => {
+    mutationFn: ({
+      name,
+      createdById,
+    }: {
+      name: string;
+      createdById: number;
+    }) => createCategoryApi(name, createdById),
+    onSuccess: () => {
       toast.success(`Category "${categoryName}" created successfully!`);
       setIsCategoryModalOpen(false);
       setCategoryName("");
@@ -157,7 +168,7 @@ const Dashboard = () => {
       productCategoryId: number;
       createdById: number;
     }) => createSubcategoryApi(name, productCategoryId, createdById),
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success(`Subcategory "${subcategoryName}" created successfully!`);
       setIsSubcategoryModalOpen(false);
       setSubcategoryName("");
@@ -171,7 +182,7 @@ const Dashboard = () => {
   // Handle category creation
   const handleCreateCategory = () => {
     const userId = getCookie("id");
-  
+
     if (!userId) {
       toast.error("User not authenticated. Please login again.");
       return;
@@ -181,8 +192,6 @@ const Dashboard = () => {
       toast.error("Please enter a category name.");
       return;
     }
-
-
 
     createCategoryMutation.mutate({
       name: categoryName.trim(),
@@ -271,7 +280,9 @@ const Dashboard = () => {
           </div>
           <div>
             <p className="font-semibold text-amber-900">12 Pending Claims</p>
-            <p className="text-amber-700 text-xs">Action needed - Review claims</p>
+            <p className="text-amber-700 text-xs">
+              Action needed - Review claims
+            </p>
           </div>
         </div>
         {/* Stats Cards */}
@@ -295,7 +306,9 @@ const Dashboard = () => {
           <StatCard
             title="Claims"
             value="167"
-            icon={<FluentDocumentBulletList16Regular className="text-orange-600" />}
+            icon={
+              <FluentDocumentBulletList16Regular className="text-orange-600" />
+            }
             href="/admin/claims"
             gradient="from-orange-50 to-orange-100"
             iconBg="bg-orange-100"
@@ -323,7 +336,9 @@ const Dashboard = () => {
                   <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     Recent Activities
                   </h3>
-                  <p className="text-gray-500 text-xs">Latest updates and actions</p>
+                  <p className="text-gray-500 text-xs">
+                    Latest updates and actions
+                  </p>
                 </div>
               </div>
 
@@ -339,7 +354,9 @@ const Dashboard = () => {
                   title="Company Registration"
                   description="TechCorp Solutions registered"
                   status="Completed"
-                  icon={<MaterialSymbolsPersonRounded className="text-green-600" />}
+                  icon={
+                    <MaterialSymbolsPersonRounded className="text-green-600" />
+                  }
                   time="5 hours ago"
                 />
                 <ActivityCard
@@ -384,7 +401,9 @@ const Dashboard = () => {
                 />
               </div>
               <div className="h-48 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg flex items-center justify-center border border-blue-100">
-                <p className="text-gray-500 text-sm">Chart will be rendered here</p>
+                <p className="text-gray-500 text-sm">
+                  Chart will be rendered here
+                </p>
               </div>
             </div>
 
@@ -400,25 +419,31 @@ const Dashboard = () => {
               </div>
               <div className="grid grid-cols-1 gap-2">
                 <Button
-                  onClick={() => window.location.href = '/admin/addcompany'}
+                  onClick={() => (window.location.href = "/admin/addcompany")}
                   className="w-full h-auto p-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg text-center transition-all duration-200 border border-blue-200 transform hover:scale-105"
                   type="text"
                 >
-                  <span className="text-blue-700 font-medium text-sm">Add Company</span>
+                  <span className="text-blue-700 font-medium text-sm">
+                    Add Company
+                  </span>
                 </Button>
                 <Button
                   onClick={handleAddCategoryClick}
                   className="w-full h-auto p-3 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 rounded-lg text-center transition-all duration-200 border border-emerald-200 transform hover:scale-105"
                   type="text"
                 >
-                  <span className="text-emerald-700 font-medium text-sm">Add Category</span>
+                  <span className="text-emerald-700 font-medium text-sm">
+                    Add Category
+                  </span>
                 </Button>
                 <Button
                   onClick={handleAddSubcategoryClick}
                   className="w-full h-auto p-3 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-lg text-center transition-all duration-200 border border-purple-200 transform hover:scale-105"
                   type="text"
                 >
-                  <span className="text-purple-700 font-medium text-sm">Add Subcategory</span>
+                  <span className="text-purple-700 font-medium text-sm">
+                    Add Subcategory
+                  </span>
                 </Button>
               </div>
             </div>
@@ -432,7 +457,9 @@ const Dashboard = () => {
               <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
                 <IcBaselineAttractions className="text-emerald-600 text-lg" />
               </div>
-              <span className="text-lg font-semibold text-gray-900">Create New Category</span>
+              <span className="text-lg font-semibold text-gray-900">
+                Create New Category
+              </span>
             </div>
           }
           open={isCategoryModalOpen}
@@ -465,9 +492,13 @@ const Dashboard = () => {
                   <div className="flex items-start gap-2">
                     <span className="text-emerald-500 text-lg">ℹ️</span>
                     <div>
-                      <p className="text-emerald-800 font-medium text-sm">Category Settings</p>
+                      <p className="text-emerald-800 font-medium text-sm">
+                        Category Settings
+                      </p>
                       <p className="text-emerald-700 text-sm mt-1">
-                        This category will be created with <strong>Priority 1</strong> and will be immediately available for product assignment.
+                        This category will be created with{" "}
+                        <strong>Priority 1</strong> and will be immediately
+                        available for product assignment.
                       </p>
                     </div>
                   </div>
@@ -491,7 +522,9 @@ const Dashboard = () => {
                 className="bg-emerald-600 hover:bg-emerald-700 border-emerald-600 hover:border-emerald-700"
                 icon={createCategoryMutation.isPending ? null : "📁"}
               >
-                {createCategoryMutation.isPending ? "Creating..." : "Create Category"}
+                {createCategoryMutation.isPending
+                  ? "Creating..."
+                  : "Create Category"}
               </Button>
             </div>
           </div>
@@ -504,7 +537,9 @@ const Dashboard = () => {
               <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                 <IcBaselineAttractions className="text-purple-600 text-lg" />
               </div>
-              <span className="text-lg font-semibold text-gray-900">Create New Subcategory</span>
+              <span className="text-lg font-semibold text-gray-900">
+                Create New Subcategory
+              </span>
             </div>
           }
           open={isSubcategoryModalOpen}
@@ -528,7 +563,9 @@ const Dashboard = () => {
                     placeholder="Select parent category"
                     value={selectedCategoryId}
                     onChange={setSelectedCategoryId}
-                    disabled={createSubcategoryMutation.isPending || isCategoriesLoading}
+                    disabled={
+                      createSubcategoryMutation.isPending || isCategoriesLoading
+                    }
                     loading={isCategoriesLoading}
                     className="w-full"
                     options={categories?.map((category) => ({
@@ -559,9 +596,14 @@ const Dashboard = () => {
                   <div className="flex items-start gap-2">
                     <span className="text-purple-500 text-lg">ℹ️</span>
                     <div>
-                      <p className="text-purple-800 font-medium text-sm">Subcategory Settings</p>
+                      <p className="text-purple-800 font-medium text-sm">
+                        Subcategory Settings
+                      </p>
                       <p className="text-purple-700 text-sm mt-1">
-                        This subcategory will be created with <strong>Priority 1</strong> under the selected parent category and will be immediately available for product assignment.
+                        This subcategory will be created with{" "}
+                        <strong>Priority 1</strong> under the selected parent
+                        category and will be immediately available for product
+                        assignment.
                       </p>
                     </div>
                   </div>
@@ -585,7 +627,9 @@ const Dashboard = () => {
                 className="bg-purple-600 hover:bg-purple-700 border-purple-600 hover:border-purple-700"
                 icon={createSubcategoryMutation.isPending ? null : "📂"}
               >
-                {createSubcategoryMutation.isPending ? "Creating..." : "Create Subcategory"}
+                {createSubcategoryMutation.isPending
+                  ? "Creating..."
+                  : "Create Subcategory"}
               </Button>
             </div>
           </div>
@@ -605,10 +649,19 @@ interface StatCardProps {
   iconBg: string;
 }
 
-const StatCard = ({ title, value, icon, href, gradient, iconBg }: StatCardProps) => {
+const StatCard = ({
+  title,
+  value,
+  icon,
+  href,
+  gradient,
+  iconBg,
+}: StatCardProps) => {
   return (
     <Link href={href} className="group">
-      <div className={`bg-gradient-to-br ${gradient} rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 transform group-hover:scale-105`}>
+      <div
+        className={`bg-gradient-to-br ${gradient} rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 transform group-hover:scale-105`}
+      >
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-600 text-xs font-medium">{title}</p>
@@ -632,30 +685,36 @@ interface ActivityCardProps {
   time: string;
 }
 
-const ActivityCard = ({ title, description, status, icon, time }: ActivityCardProps) => {
+const ActivityCard = ({
+  title,
+  description,
+  status,
+  icon,
+  time,
+}: ActivityCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed':
-        return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200';
-      case 'pending review':
-        return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200';
-      case 'active':
-        return 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border-blue-200';
+      case "completed":
+        return "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200";
+      case "pending review":
+        return "bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200";
+      case "active":
+        return "bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border-blue-200";
       default:
-        return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200';
+        return "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200";
     }
   };
 
   const getIconBg = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed':
-        return 'bg-green-100';
-      case 'pending review':
-        return 'bg-yellow-100';
-      case 'active':
-        return 'bg-blue-100';
+      case "completed":
+        return "bg-green-100";
+      case "pending review":
+        return "bg-yellow-100";
+      case "active":
+        return "bg-blue-100";
       default:
-        return 'bg-gray-100';
+        return "bg-gray-100";
     }
   };
 
@@ -668,7 +727,11 @@ const ActivityCard = ({ title, description, status, icon, time }: ActivityCardPr
         <h4 className="font-medium text-gray-900 truncate text-sm">{title}</h4>
         <p className="text-gray-500 text-xs truncate">{description}</p>
         <div className="flex items-center gap-2 mt-1">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+              status
+            )}`}
+          >
             {status}
           </span>
           <span className="text-gray-400 text-xs">{time}</span>

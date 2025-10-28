@@ -36,31 +36,6 @@ try {
 
 const { Title, Text } = Typography;
 
-// Types
-interface Customer {
-    id: number;
-    name: string;
-    contact1: string;
-    contact2?: string;
-    email?: string;
-    address?: string;
-}
-
-interface Product {
-    id: number;
-    name: string;
-    model_no?: string;
-}
-
-interface Company {
-    id: number;
-    name: string;
-}
-
-interface Dealer {
-    id: number;
-    name: string;
-}
 
 interface SaleDetails {
     id: number;
