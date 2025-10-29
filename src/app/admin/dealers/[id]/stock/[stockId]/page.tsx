@@ -7,22 +7,12 @@ import { ApiCall } from "@/services/api";
 import { useRouter } from "next/navigation";
 
 // Icons
-let ArrowLeftOutlined: any,
-  CalendarOutlined: any,
-  ShoppingOutlined: any,
-  BankOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  ArrowLeftOutlined = icons.ArrowLeftOutlined;
-  CalendarOutlined = icons.CalendarOutlined;
-  ShoppingOutlined = icons.ShoppingOutlined;
-  BankOutlined = icons.BankOutlined;
-} catch {
-  ArrowLeftOutlined = () => "←";
-  CalendarOutlined = () => "📅";
-  ShoppingOutlined = () => "🛒";
-  BankOutlined = () => "🏢";
-}
+import {
+  ArrowLeftOutlined,
+  CalendarOutlined,
+  ShoppingOutlined,
+  BankOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 

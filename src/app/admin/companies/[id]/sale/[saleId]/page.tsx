@@ -7,15 +7,9 @@ import { ApiCall } from "@/services/api";
 import { useRouter } from "next/navigation";
 
 // Icons
-let ArrowLeftOutlined: any, EditOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  ArrowLeftOutlined = icons.ArrowLeftOutlined;
-  EditOutlined = icons.EditOutlined;
-} catch (e) {
-  ArrowLeftOutlined = () => "←";
-  EditOutlined = () => "✏️";
-}
+import {
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 

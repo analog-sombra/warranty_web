@@ -14,32 +14,21 @@ import {
   ColumnFiltersState,
   PaginationState,
 } from "@tanstack/react-table";
-import { Input, Button, Select, Tag, Card, Typography, Dropdown, Modal } from "antd";
+import { Input, Button, Select, Card, Typography, Dropdown, Modal } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-toastify";
 
-// Try importing icons differently
-let SearchOutlined: any, ReloadOutlined: any, MoreOutlined: any, EditOutlined: any, EyeOutlined: any, DeleteOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  SearchOutlined = icons.SearchOutlined;
-  ReloadOutlined = icons.ReloadOutlined;
-  MoreOutlined = icons.MoreOutlined;
-  EditOutlined = icons.EditOutlined;
-  DeleteOutlined = icons.DeleteOutlined;
-  EyeOutlined = icons.EyeOutlined;
-} catch (e) {
-  // Fallback if icons don't load
-  SearchOutlined = () => "🔍";
-  ReloadOutlined = () => "🔄";
-  MoreOutlined = () => "⋯";
-  EditOutlined = () => "✏️";
-  DeleteOutlined = () => "🗑️";
-  EyeOutlined = () => "👁️";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -74,10 +63,6 @@ interface SearchPaginationInput {
   skip: number;
   take: number;
   search?: string;
-}
-
-interface WhereProductSearchInput {
-  company_id: number;
 }
 
 // GraphQL queries
@@ -149,7 +134,10 @@ const fetchProducts = async (
   return response.data.getPaginatedProduct;
 };
 
-const deleteProductApi = async (productId: number, userId: number): Promise<{ id: number }> => {
+const deleteProductApi = async (
+  productId: number,
+  userId: number
+): Promise<{ id: number }> => {
   const response = await ApiCall<{ deleteProduct: { id: number } }>({
     query: DELETE_PRODUCT,
     variables: {
@@ -196,7 +184,9 @@ const ProductsPage = () => {
 
   // State management
   const [globalFilter, setGlobalFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -206,7 +196,8 @@ const ProductsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [productToUpdateStatus, setProductToUpdateStatus] = useState<Product | null>(null);
+  const [productToUpdateStatus, setProductToUpdateStatus] =
+    useState<Product | null>(null);
 
   // Query client for invalidating queries
   const queryClient = useQueryClient();
@@ -234,8 +225,13 @@ const ProductsPage = () => {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: ({ productId, userId }: { productId: number; userId: number }) =>
-      deleteProductApi(productId, userId),
+    mutationFn: ({
+      productId,
+      userId,
+    }: {
+      productId: number;
+      userId: number;
+    }) => deleteProductApi(productId, userId),
     onSuccess: () => {
       toast.success(`Product deleted successfully`);
       queryClient.invalidateQueries({ queryKey: ["products", companyId] });
@@ -250,7 +246,7 @@ const ProductsPage = () => {
     mutationFn: ({
       productId,
       status,
-      updatedById
+      updatedById,
     }: {
       productId: number;
       status: "ACTIVE" | "INACTIVE";
@@ -270,7 +266,7 @@ const ProductsPage = () => {
   const columnHelper = createColumnHelper<Product>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Product, any>[]>(
+  const columns = useMemo<ColumnDef<Product, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
     () => [
       columnHelper.accessor("id", {
         header: "ID",
@@ -287,8 +283,12 @@ const ProductsPage = () => {
               </span>
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{info.getValue()}</div>
-              <div className="text-xs text-gray-500">ID: {info.row.original.id}</div>
+              <div className="font-semibold text-gray-900">
+                {info.getValue()}
+              </div>
+              <div className="text-xs text-gray-500">
+                ID: {info.row.original.id}
+              </div>
             </div>
           </div>
         ),
@@ -299,7 +299,9 @@ const ProductsPage = () => {
         cell: (info) => (
           <div>
             <div className="font-medium text-gray-900">{info.getValue()}</div>
-            <div className="text-xs text-gray-500">{info.row.original.subcategory.name}</div>
+            <div className="text-xs text-gray-500">
+              {info.row.original.subcategory.name}
+            </div>
           </div>
         ),
         size: 150,
@@ -322,12 +324,13 @@ const ProductsPage = () => {
           const years = Math.floor(days / 365);
           const months = Math.floor((days % 365) / 30);
           const remainingDays = days % 30;
-          
+
           let displayText = "";
           if (years > 0) displayText += `${years}y `;
           if (months > 0) displayText += `${months}m `;
-          if (remainingDays > 0 || displayText === "") displayText += `${remainingDays}d`;
-          
+          if (remainingDays > 0 || displayText === "")
+            displayText += `${remainingDays}d`;
+
           return (
             <div className="flex items-center">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -347,14 +350,18 @@ const ProductsPage = () => {
 
           return (
             <div className="flex items-center gap-2">
-              <div className={`flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                status === "ACTIVE"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}>
-                <div className={`w-2 h-2 rounded-full mr-2 ${
-                  status === "ACTIVE" ? "bg-green-400" : "bg-red-400"
-                }`}></div>
+              <div
+                className={`flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                  status === "ACTIVE"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 ${
+                    status === "ACTIVE" ? "bg-green-400" : "bg-red-400"
+                  }`}
+                ></div>
                 {status}
               </div>
               <Button
@@ -367,7 +374,9 @@ const ProductsPage = () => {
                     ? "text-red-600 hover:bg-red-50"
                     : "text-green-600 hover:bg-green-50"
                 }`}
-                title={`Click to ${status === "ACTIVE" ? "deactivate" : "activate"} product`}
+                title={`Click to ${
+                  status === "ACTIVE" ? "deactivate" : "activate"
+                } product`}
               >
                 {status === "ACTIVE" ? "📴" : "✅"}
               </Button>
@@ -380,7 +389,10 @@ const ProductsPage = () => {
       columnHelper.accessor("description", {
         header: "Description",
         cell: (info) => (
-          <div className="max-w-xs truncate text-gray-700" title={info.getValue()}>
+          <div
+            className="max-w-xs truncate text-gray-700"
+            title={info.getValue()}
+          >
             {info.getValue()}
           </div>
         ),
@@ -398,7 +410,7 @@ const ProductsPage = () => {
                 menu={{
                   items: getActionMenuItems(product),
                 }}
-                trigger={['click']}
+                trigger={["click"]}
                 placement="bottomRight"
               >
                 <Button
@@ -435,7 +447,9 @@ const ProductsPage = () => {
   const table = useReactTable({
     data: filteredData,
     columns,
-    pageCount: productsData ? Math.ceil(productsData.total / pagination.pageSize) : -1,
+    pageCount: productsData
+      ? Math.ceil(productsData.total / pagination.pageSize)
+      : -1,
     state: {
       sorting,
       columnFilters,
@@ -549,7 +563,8 @@ const ProductsPage = () => {
       return;
     }
 
-    const newStatus = productToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const newStatus =
+      productToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
     statusUpdateMutation.mutate(
       {
@@ -588,21 +603,25 @@ const ProductsPage = () => {
   // Get action menu items for each row
   const getActionMenuItems = (product: Product) => [
     {
-      key: 'view',
+      key: "view",
       icon: <EyeOutlined />,
-      label: 'View',
+      label: "View",
       onClick: () => handleView(product),
     },
     {
-      key: 'edit',
+      key: "edit",
       icon: <EditOutlined />,
-      label: 'Edit',
+      label: "Edit",
       onClick: () => handleEdit(product),
     },
     {
-      key: 'delete',
-      icon: deleteMutation.isPending ? <span className="animate-spin">⏳</span> : <DeleteOutlined />,
-      label: deleteMutation.isPending ? 'Deleting...' : 'Delete',
+      key: "delete",
+      icon: deleteMutation.isPending ? (
+        <span className="animate-spin">⏳</span>
+      ) : (
+        <DeleteOutlined />
+      ),
+      label: deleteMutation.isPending ? "Deleting..." : "Delete",
       danger: true,
       disabled: deleteMutation.isPending,
       onClick: () => handleDelete(product),
@@ -635,7 +654,9 @@ const ProductsPage = () => {
             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
               <DeleteOutlined className="text-red-600 text-lg" />
             </div>
-            <span className="text-lg font-semibold text-gray-900">Delete Product</span>
+            <span className="text-lg font-semibold text-gray-900">
+              Delete Product
+            </span>
           </div>
         }
         open={isDeleteModalOpen}
@@ -658,9 +679,12 @@ const ProductsPage = () => {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{productToDelete.name}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {productToDelete.name}
+                    </h4>
                     <p className="text-sm text-gray-500">
-                      ID: {productToDelete.id} • {productToDelete.subcategory.product_category.name}
+                      ID: {productToDelete.id} •{" "}
+                      {productToDelete.subcategory.product_category.name}
                     </p>
                   </div>
                 </div>
@@ -671,7 +695,8 @@ const ProductsPage = () => {
                   <div>
                     <p className="text-red-800 font-medium text-sm">Warning</p>
                     <p className="text-red-700 text-sm">
-                      This action cannot be undone. All data associated with this product will be permanently deleted.
+                      This action cannot be undone. All data associated with
+                      this product will be permanently deleted.
                     </p>
                   </div>
                 </div>
@@ -705,17 +730,22 @@ const ProductsPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              productToUpdateStatus?.status === "ACTIVE"
-                ? "bg-red-100"
-                : "bg-green-100"
-            }`}>
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                productToUpdateStatus?.status === "ACTIVE"
+                  ? "bg-red-100"
+                  : "bg-green-100"
+              }`}
+            >
               <span className="text-lg">
                 {productToUpdateStatus?.status === "ACTIVE" ? "📴" : "✅"}
               </span>
             </div>
             <span className="text-lg font-semibold text-gray-900">
-              {productToUpdateStatus?.status === "ACTIVE" ? "Deactivate" : "Activate"} Product
+              {productToUpdateStatus?.status === "ACTIVE"
+                ? "Deactivate"
+                : "Activate"}{" "}
+              Product
             </span>
           </div>
         }
@@ -731,7 +761,9 @@ const ProductsPage = () => {
               <p className="text-gray-700 mb-2">
                 Are you sure you want to{" "}
                 <strong>
-                  {productToUpdateStatus.status === "ACTIVE" ? "deactivate" : "activate"}
+                  {productToUpdateStatus.status === "ACTIVE"
+                    ? "deactivate"
+                    : "activate"}
                 </strong>{" "}
                 the product:
               </p>
@@ -743,40 +775,52 @@ const ProductsPage = () => {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{productToUpdateStatus.name}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {productToUpdateStatus.name}
+                    </h4>
                     <p className="text-sm text-gray-500">
-                      ID: {productToUpdateStatus.id} • {productToUpdateStatus.subcategory.product_category.name}
+                      ID: {productToUpdateStatus.id} •{" "}
+                      {productToUpdateStatus.subcategory.product_category.name}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className={`mt-4 p-3 rounded-lg border ${
-                productToUpdateStatus.status === "ACTIVE"
-                  ? "bg-red-50 border-red-200"
-                  : "bg-green-50 border-green-200"
-              }`}>
+              <div
+                className={`mt-4 p-3 rounded-lg border ${
+                  productToUpdateStatus.status === "ACTIVE"
+                    ? "bg-red-50 border-red-200"
+                    : "bg-green-50 border-green-200"
+                }`}
+              >
                 <div className="flex items-start gap-2">
                   <span className="text-lg">
                     {productToUpdateStatus.status === "ACTIVE" ? "⚠️" : "ℹ️"}
                   </span>
                   <div>
-                    <p className={`font-medium text-sm ${
-                      productToUpdateStatus.status === "ACTIVE"
-                        ? "text-red-800"
-                        : "text-green-800"
-                    }`}>
+                    <p
+                      className={`font-medium text-sm ${
+                        productToUpdateStatus.status === "ACTIVE"
+                          ? "text-red-800"
+                          : "text-green-800"
+                      }`}
+                    >
                       Status Change
                     </p>
-                    <p className={`text-sm ${
-                      productToUpdateStatus.status === "ACTIVE"
-                        ? "text-red-700"
-                        : "text-green-700"
-                    }`}>
+                    <p
+                      className={`text-sm ${
+                        productToUpdateStatus.status === "ACTIVE"
+                          ? "text-red-700"
+                          : "text-green-700"
+                      }`}
+                    >
                       This will change the product status from{" "}
                       <strong>{productToUpdateStatus.status}</strong> to{" "}
                       <strong>
-                        {productToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"}
-                      </strong>.
+                        {productToUpdateStatus.status === "ACTIVE"
+                          ? "INACTIVE"
+                          : "ACTIVE"}
+                      </strong>
+                      .
                     </p>
                   </div>
                 </div>
@@ -801,14 +845,21 @@ const ProductsPage = () => {
                     ? "bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                     : "bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700"
                 }
-                icon={statusUpdateMutation.isPending ? null : (
-                  productToUpdateStatus.status === "ACTIVE" ? "📴" : "✅"
-                )}
+                icon={
+                  statusUpdateMutation.isPending
+                    ? null
+                    : productToUpdateStatus.status === "ACTIVE"
+                    ? "📴"
+                    : "✅"
+                }
               >
                 {statusUpdateMutation.isPending
                   ? "Updating..."
-                  : `${productToUpdateStatus.status === "ACTIVE" ? "Deactivate" : "Activate"} Product`
-                }
+                  : `${
+                      productToUpdateStatus.status === "ACTIVE"
+                        ? "Deactivate"
+                        : "Activate"
+                    } Product`}
               </Button>
             </div>
           </div>
@@ -864,7 +915,9 @@ const ProductsPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Status:</span>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Status:
+              </span>
               <Select
                 placeholder="All"
                 className="w-32"
@@ -880,11 +933,17 @@ const ProductsPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Show:</span>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Show:
+              </span>
               <Select
                 value={pagination.pageSize}
                 onChange={(value) => {
-                  setPagination({ ...pagination, pageSize: value, pageIndex: 0 });
+                  setPagination({
+                    ...pagination,
+                    pageSize: value,
+                    pageIndex: 0,
+                  });
                 }}
                 className="w-20"
                 size="large"
@@ -923,7 +982,10 @@ const ProductsPage = () => {
               <table className="w-full border-collapse">
                 <thead>
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id} className="bg-gray-50 border-b border-gray-200">
+                    <tr
+                      key={headerGroup.id}
+                      className="bg-gray-50 border-b border-gray-200"
+                    >
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
@@ -936,7 +998,8 @@ const ProductsPage = () => {
                                 className: header.column.getCanSort()
                                   ? "cursor-pointer select-none hover:text-purple-600 transition-colors duration-200 flex items-center gap-2"
                                   : "flex items-center gap-2",
-                                onClick: header.column.getToggleSortingHandler(),
+                                onClick:
+                                  header.column.getToggleSortingHandler(),
                               }}
                             >
                               {flexRender(
@@ -961,11 +1024,14 @@ const ProductsPage = () => {
                     <tr
                       key={row.id}
                       className={`transition-colors duration-200 hover:bg-purple-50 ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
                       }`}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -980,8 +1046,12 @@ const ProductsPage = () => {
               {filteredData.length === 0 && !isLoading && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 text-6xl mb-4">📦</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-                  <p className="text-gray-500">Try adjusting your search or add a new product</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No products found
+                  </h3>
+                  <p className="text-gray-500">
+                    Try adjusting your search or add a new product
+                  </p>
                   <Button
                     type="primary"
                     onClick={handleAddProduct}
@@ -998,14 +1068,20 @@ const ProductsPage = () => {
           {filteredData.length > 0 && (
             <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{pagination.pageIndex * pagination.pageSize + 1}</span> to{" "}
+                Showing{" "}
+                <span className="font-medium">
+                  {pagination.pageIndex * pagination.pageSize + 1}
+                </span>{" "}
+                to{" "}
                 <span className="font-medium">
                   {Math.min(
                     (pagination.pageIndex + 1) * pagination.pageSize,
                     productsData?.total || 0
                   )}
                 </span>{" "}
-                of <span className="font-medium">{productsData?.total || 0}</span> products
+                of{" "}
+                <span className="font-medium">{productsData?.total || 0}</span>{" "}
+                products
               </div>
 
               <div className="flex items-center space-x-2">
@@ -1032,9 +1108,7 @@ const ProductsPage = () => {
                     {table.getState().pagination.pageIndex + 1}
                   </span>
                   <span className="text-sm">of</span>
-                  <span className="font-semibold">
-                    {table.getPageCount()}
-                  </span>
+                  <span className="font-semibold">{table.getPageCount()}</span>
                 </span>
 
                 <Button

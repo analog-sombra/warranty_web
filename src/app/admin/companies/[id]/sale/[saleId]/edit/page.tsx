@@ -14,16 +14,10 @@ import { TextInput } from "@/components/form/inputfields/textinput";
 import { DateSelect } from "@/components/form/inputfields/dateselect";
 import { onFormError } from "@/utils/methods";
 
-// Icons
-let ArrowLeftOutlined: any, SaveOutlined: any;
-try {
-    const icons = require("@ant-design/icons");
-    ArrowLeftOutlined = icons.ArrowLeftOutlined;
-    SaveOutlined = icons.SaveOutlined;
-} catch (e) {
-    ArrowLeftOutlined = () => "←";
-    SaveOutlined = () => "💾";
-}
+import {
+  ArrowLeftOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -122,9 +116,9 @@ const fetchDealerSaleById = async (id: number): Promise<DealerSaleDetails> => {
     return response.data.getDealerSalesById;
 };
 
-const updateDealerSaleApi = async (id: number, data: UpdateSaleInput): Promise<any> => {
+const updateDealerSaleApi = async (id: number, data: UpdateSaleInput): Promise<unknown> => {
 
-    const response = await ApiCall<{ updateDealerSales: any }>({
+    const response = await ApiCall<{ updateDealerSales: unknown }>({
         query: UPDATE_DEALER_SALE,
         variables: {
             id: id,
@@ -179,7 +173,7 @@ const EditSalePage: React.FC<EditSalePageProps> = ({ params }) => {
     // Update mutation
     const updateMutation = useMutation({
         mutationFn: (data: UpdateSaleInput) => updateDealerSaleApi(saleId, data),
-        onSuccess: (data) => {
+        onSuccess: () => {
             toast.success("Sale updated successfully!");
             queryClient.invalidateQueries({ queryKey: ["dealerSale", saleId] });
             queryClient.invalidateQueries({ queryKey: ["dealerSales", companyId] });

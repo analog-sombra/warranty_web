@@ -21,23 +21,13 @@ import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-// Try importing icons differently
-let SearchOutlined: any, ReloadOutlined: any, MoreOutlined: any, EditOutlined: any, DeleteOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  SearchOutlined = icons.SearchOutlined;
-  ReloadOutlined = icons.ReloadOutlined;
-  MoreOutlined = icons.MoreOutlined;
-  EditOutlined = icons.EditOutlined;
-  DeleteOutlined = icons.DeleteOutlined;
-} catch (e) {
-  // Fallback if icons don't load
-  SearchOutlined = () => "🔍";
-  ReloadOutlined = () => "🔄";
-  MoreOutlined = () => "⋯";
-  EditOutlined = () => "✏️";
-  DeleteOutlined = () => "🗑️";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -71,10 +61,6 @@ interface SearchPaginationInput {
   search?: string;
 }
 
-interface UpdateSubcategoryInput {
-  status: "ACTIVE" | "INACTIVE";
-  updatedById: number;
-}
 
 // GraphQL queries
 const GET_PAGINATED_SUBCATEGORY = `
@@ -283,7 +269,6 @@ const SubcategoriesPage = () => {
     data: categories,
     isLoading: isCategoriesLoading,
     isError: isCategoriesError,
-    refetch: refetchCategories,
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategoriesApi,
@@ -336,7 +321,7 @@ const SubcategoriesPage = () => {
       productCategoryId: number;
       createdById: number;
     }) => createSubcategoryApi(name, productCategoryId, createdById),
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success(`Subcategory "${subcategoryName}" created successfully!`);
       setIsSubcategoryModalOpen(false);
       setSubcategoryName("");
@@ -353,7 +338,7 @@ const SubcategoriesPage = () => {
   const columnHelper = createColumnHelper<Subcategory>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Subcategory, any>[]>(
+  const columns = useMemo<ColumnDef<Subcategory, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
     () => [
       columnHelper.accessor("id", {
         header: "ID",

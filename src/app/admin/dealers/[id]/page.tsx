@@ -8,24 +8,14 @@ import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-// Icons
-let EditOutlined: any, DeleteOutlined: any, ArrowLeftOutlined: any, ShopOutlined: any, UsergroupAddOutlined: any, ShoppingCartOutlined: any;
-try {
-    const icons = require("@ant-design/icons");
-    EditOutlined = icons.EditOutlined;
-    DeleteOutlined = icons.DeleteOutlined;
-    ArrowLeftOutlined = icons.ArrowLeftOutlined;
-    ShopOutlined = icons.ShopOutlined;
-    UsergroupAddOutlined = icons.UsergroupAddOutlined;
-    ShoppingCartOutlined = icons.ShoppingCartOutlined;
-} catch (e) {
-    EditOutlined = () => "✏️";
-    DeleteOutlined = () => "🗑️";
-    ArrowLeftOutlined = () => "←";
-    ShopOutlined = () => "🏪";
-    UsergroupAddOutlined = () => "👥";
-    ShoppingCartOutlined = () => "🛒";
-}
+import {
+  EditOutlined,
+  DeleteOutlined,
+  ArrowLeftOutlined,
+  ShopOutlined,
+  UsergroupAddOutlined,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 

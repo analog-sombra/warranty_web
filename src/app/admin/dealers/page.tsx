@@ -21,25 +21,14 @@ import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-// Try importing icons differently
-let SearchOutlined: any, ReloadOutlined: any, MoreOutlined: any, EditOutlined: any, EyeOutlined: any, DeleteOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  SearchOutlined = icons.SearchOutlined;
-  ReloadOutlined = icons.ReloadOutlined;
-  MoreOutlined = icons.MoreOutlined;
-  EditOutlined = icons.EditOutlined;
-  DeleteOutlined = icons.DeleteOutlined;
-  EyeOutlined = icons.EyeOutlined;
-} catch (e) {
-  // Fallback if icons don't load
-  SearchOutlined = () => "🔍";
-  ReloadOutlined = () => "🔄";
-  MoreOutlined = () => "⋯";
-  EditOutlined = () => "✏️";
-  DeleteOutlined = () => "🗑️";
-  EyeOutlined = () => "👁️";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -73,10 +62,6 @@ interface SearchPaginationInput {
   search?: string;
 }
 
-interface UpdateDealerInput {
-  status: "ACTIVE" | "INACTIVE";
-  updatedById: number;
-}
 
 // GraphQL queries
 const GET_PAGINATED_DEALER = `
@@ -261,7 +246,7 @@ const DealersPage = () => {
   const columnHelper = createColumnHelper<Dealer>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Dealer, any>[]>(
+  const columns = useMemo<ColumnDef<Dealer, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
     () => [
       columnHelper.accessor("id", {
         header: "ID",

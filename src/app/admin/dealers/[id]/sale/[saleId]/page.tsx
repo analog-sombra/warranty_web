@@ -7,32 +7,18 @@ import { ApiCall } from "@/services/api";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-// Icons
-let ArrowLeftOutlined: any, EditOutlined: any, DeleteOutlined: any, ShoppingCartOutlined: any, UserOutlined: any, TagOutlined: any, CalendarOutlined: any, PhoneOutlined: any, MailOutlined: any, EnvironmentOutlined: any;
-try {
-    const icons = require("@ant-design/icons");
-    ArrowLeftOutlined = icons.ArrowLeftOutlined;
-    EditOutlined = icons.EditOutlined;
-    DeleteOutlined = icons.DeleteOutlined;
-    ShoppingCartOutlined = icons.ShoppingCartOutlined;
-    UserOutlined = icons.UserOutlined;
-    TagOutlined = icons.TagOutlined;
-    CalendarOutlined = icons.CalendarOutlined;
-    PhoneOutlined = icons.PhoneOutlined;
-    MailOutlined = icons.MailOutlined;
-    EnvironmentOutlined = icons.EnvironmentOutlined;
-} catch (e) {
-    ArrowLeftOutlined = () => "←";
-    EditOutlined = () => "✏";
-    DeleteOutlined = () => "🗑";
-    ShoppingCartOutlined = () => "🛒";
-    UserOutlined = () => "👤";
-    TagOutlined = () => "🏷";
-    CalendarOutlined = () => "📅";
-    PhoneOutlined = () => "📞";
-    MailOutlined = () => "📧";
-    EnvironmentOutlined = () => "📍";
-}
+import {
+  ArrowLeftOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+  TagOutlined,
+  CalendarOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  EnvironmentOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 

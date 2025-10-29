@@ -22,34 +22,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 // Icons
-let SearchOutlined: any,
-  ReloadOutlined: any,
-  MoreOutlined: any,
-  EditOutlined: any,
-  EyeOutlined: any,
-  DeleteOutlined: any,
-  ArrowLeftOutlined: any,
-  PlusOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  SearchOutlined = icons.SearchOutlined;
-  ReloadOutlined = icons.ReloadOutlined;
-  MoreOutlined = icons.MoreOutlined;
-  EditOutlined = icons.EditOutlined;
-  DeleteOutlined = icons.DeleteOutlined;
-  EyeOutlined = icons.EyeOutlined;
-  ArrowLeftOutlined = icons.ArrowLeftOutlined;
-  PlusOutlined = icons.PlusOutlined;
-} catch (e) {
-  SearchOutlined = () => "🔍";
-  ReloadOutlined = () => "🔄";
-  MoreOutlined = () => "⋯";
-  EditOutlined = () => "✏️";
-  DeleteOutlined = () => "🗑️";
-  EyeOutlined = () => "👁️";
-  ArrowLeftOutlined = () => "←";
-  PlusOutlined = () => "+";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  ArrowLeftOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -94,9 +76,7 @@ interface SearchPaginationInput {
   search?: string;
 }
 
-interface WhereUserCompanySearchInput {
-  company_id: number;
-}
+
 
 interface DealerInfo {
   id: number;
@@ -329,7 +309,7 @@ const DealerUsersPage: React.FC<DealerUsersPageProps> = ({ params }) => {
       userId: number;
       deletedById: number;
     }) => deleteUserApi(userId, deletedById),
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       toast.success(`User deleted successfully`);
       queryClient.invalidateQueries({ queryKey: ["dealerUsers", dealerId] });
       // Also invalidate the user query to refresh data
@@ -367,7 +347,7 @@ const DealerUsersPage: React.FC<DealerUsersPageProps> = ({ params }) => {
   const columnHelper = createColumnHelper<User>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<User, any>[]>(
+  const columns = useMemo<ColumnDef<User, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
     () => [
       columnHelper.accessor("id", {
         header: "ID",

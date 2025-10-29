@@ -13,21 +13,13 @@ import { object, string, number, pipe, minValue, minLength, maxLength, regex } f
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { onFormError } from "@/utils/methods";
 
-let ArrowLeftOutlined: any, SaveOutlined: any, CheckCircleOutlined: any, ExclamationCircleOutlined: any, SearchOutlined: any;
-try {
-    const icons = require("@ant-design/icons");
-    ArrowLeftOutlined = icons.ArrowLeftOutlined;
-    SaveOutlined = icons.SaveOutlined;
-    CheckCircleOutlined = icons.CheckCircleOutlined;
-    ExclamationCircleOutlined = icons.ExclamationCircleOutlined;
-    SearchOutlined = icons.SearchOutlined;
-} catch (e) {
-    ArrowLeftOutlined = () => "←";
-    SaveOutlined = () => "💾";
-    CheckCircleOutlined = () => "✓";
-    ExclamationCircleOutlined = () => "⚠";
-    SearchOutlined = () => "🔍";
-}
+import {
+  ArrowLeftOutlined,
+  SaveOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 

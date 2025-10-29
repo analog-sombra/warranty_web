@@ -15,20 +15,12 @@ import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { DateSelect } from "@/components/form/inputfields/dateselect";
 import { onFormError } from "@/utils/methods";
 
-// Icons
-let ArrowLeftOutlined: any, SaveOutlined: any, CheckCircleOutlined: any, ExclamationCircleOutlined: any;
-try {
-    const icons = require("@ant-design/icons");
-    ArrowLeftOutlined = icons.ArrowLeftOutlined;
-    SaveOutlined = icons.SaveOutlined;
-    CheckCircleOutlined = icons.CheckCircleOutlined;
-    ExclamationCircleOutlined = icons.ExclamationCircleOutlined;
-} catch (e) {
-    ArrowLeftOutlined = () => "←";
-    SaveOutlined = () => "💾";
-    CheckCircleOutlined = () => "✓";
-    ExclamationCircleOutlined = () => "⚠";
-}
+import {
+  ArrowLeftOutlined,
+  SaveOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -88,9 +80,6 @@ interface CreateStockInput {
     status: "ACTIVE";
 }
 
-interface UpdateStockInput {
-    quantity: number;
-}
 
 // GraphQL queries
 const GET_DEALERS = `
@@ -349,7 +338,7 @@ const AddSalePage: React.FC<AddSalePageProps> = ({ params }) => {
 
             return saleResult;
         },
-        onSuccess: (data) => {
+        onSuccess: () => {
             toast.success("Dealer sale created successfully!");
             queryClient.invalidateQueries({ queryKey: ["dealerSales", companyId] });
             router.push(`/admin/companies/${companyId}/sale`);

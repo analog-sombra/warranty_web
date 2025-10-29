@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -14,32 +14,21 @@ import {
   ColumnFiltersState,
   PaginationState,
 } from "@tanstack/react-table";
-import { Input, Button, Select, Tag, Space, Card, Typography, Dropdown, Modal } from "antd";
+import { Input, Button, Select, Card, Typography, Dropdown, Modal } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-// Try importing icons differently
-let SearchOutlined: any, ReloadOutlined: any, MoreOutlined: any, EditOutlined: any, EyeOutlined: any, DeleteOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  SearchOutlined = icons.SearchOutlined;
-  ReloadOutlined = icons.ReloadOutlined;
-  MoreOutlined = icons.MoreOutlined;
-  EditOutlined = icons.EditOutlined;
-  DeleteOutlined = icons.DeleteOutlined;
-  EyeOutlined = icons.EyeOutlined;
-} catch (e) {
-  // Fallback if icons don't load
-  SearchOutlined = () => "🔍";
-  ReloadOutlined = () => "🔄";
-  MoreOutlined = () => "⋯";
-  EditOutlined = () => "✏️";
-  DeleteOutlined = () => "🗑️";
-  EyeOutlined = () => "👁️";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -73,10 +62,7 @@ interface SearchPaginationInput {
   search?: string;
 }
 
-interface UpdateCompanyInput {
-  status: "ACTIVE" | "INACTIVE";
-  updatedById: number;
-}
+
 
 // GraphQL queries
 const GET_PAGINATED_COMPANY = `
@@ -118,7 +104,9 @@ const UPDATE_COMPANY_STATUS = `
 `;
 
 // API functions
-const fetchCompanies = async (input: SearchPaginationInput): Promise<{
+const fetchCompanies = async (
+  input: SearchPaginationInput
+): Promise<{
   skip: number;
   take: number;
   total: number;
@@ -141,7 +129,10 @@ const fetchCompanies = async (input: SearchPaginationInput): Promise<{
   return response.data.getPaginatedCompany;
 };
 
-const deleteCompanyApi = async (companyId: number, userId: number): Promise<{ id: number }> => {
+const deleteCompanyApi = async (
+  companyId: number,
+  userId: number
+): Promise<{ id: number }> => {
   const response = await ApiCall<{ deleteCompany: { id: number } }>({
     query: DELETE_COMPANY,
     variables: {
@@ -186,7 +177,9 @@ const CompaniesPage = () => {
 
   // State management
   const [globalFilter, setGlobalFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -196,7 +189,8 @@ const CompaniesPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [companyToUpdateStatus, setCompanyToUpdateStatus] = useState<Company | null>(null);
+  const [companyToUpdateStatus, setCompanyToUpdateStatus] =
+    useState<Company | null>(null);
 
   // Query client for invalidating queries
   const queryClient = useQueryClient();
@@ -223,9 +217,14 @@ const CompaniesPage = () => {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: ({ companyId, userId }: { companyId: number; userId: number }) =>
-      deleteCompanyApi(companyId, userId),
-    onSuccess: (data, variables) => {
+    mutationFn: ({
+      companyId,
+      userId,
+    }: {
+      companyId: number;
+      userId: number;
+    }) => deleteCompanyApi(companyId, userId),
+    onSuccess: () => {
       toast.success(`Company deleted successfully`);
       // Invalidate and refetch companies data
       queryClient.invalidateQueries({ queryKey: ["companies"] });
@@ -240,11 +239,11 @@ const CompaniesPage = () => {
     mutationFn: ({
       companyId,
       status,
-      updatedById
+      updatedById,
     }: {
       companyId: number;
       status: "ACTIVE" | "INACTIVE";
-      updatedById: number
+      updatedById: number;
     }) => updateCompanyStatusApi(companyId, status, updatedById),
     onSuccess: (data, variables) => {
       const statusText = variables.status.toLowerCase();
@@ -261,7 +260,7 @@ const CompaniesPage = () => {
   const columnHelper = createColumnHelper<Company>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Company, any>[]>(
+  const columns = useMemo<ColumnDef<Company, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
     () => [
       columnHelper.accessor("id", {
         header: "ID",
@@ -278,8 +277,12 @@ const CompaniesPage = () => {
               </span>
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{info.getValue()}</div>
-              <div className="text-xs text-gray-500">ID: {info.row.original.id}</div>
+              <div className="font-semibold text-gray-900">
+                {info.getValue()}
+              </div>
+              <div className="text-xs text-gray-500">
+                ID: {info.row.original.id}
+              </div>
             </div>
           </div>
         ),
@@ -290,7 +293,9 @@ const CompaniesPage = () => {
         cell: (info) => (
           <div>
             <div className="font-medium text-gray-900">{info.getValue()}</div>
-            <div className="text-xs text-gray-500">{info.row.original.zone.name}</div>
+            <div className="text-xs text-gray-500">
+              {info.row.original.zone.name}
+            </div>
           </div>
         ),
         size: 150,
@@ -315,12 +320,18 @@ const CompaniesPage = () => {
 
           return (
             <div className="flex items-center gap-2">
-              <div className={`flex items-center px-3 py-1 rounded-full text-xs font-semibold ${status === "ACTIVE"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-                }`}>
-                <div className={`w-2 h-2 rounded-full mr-2 ${status === "ACTIVE" ? "bg-green-400" : "bg-red-400"
-                  }`}></div>
+              <div
+                className={`flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                  status === "ACTIVE"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 ${
+                    status === "ACTIVE" ? "bg-green-400" : "bg-red-400"
+                  }`}
+                ></div>
                 {status}
               </div>
               <Button
@@ -328,11 +339,14 @@ const CompaniesPage = () => {
                 size="small"
                 loading={isUpdating}
                 onClick={() => handleStatusToggle(company)}
-                className={`hover:scale-105 transition-transform duration-200 ${status === "ACTIVE"
-                  ? "text-red-600 hover:bg-red-50"
-                  : "text-green-600 hover:bg-green-50"
-                  }`}
-                title={`Click to ${status === "ACTIVE" ? "deactivate" : "activate"} company`}
+                className={`hover:scale-105 transition-transform duration-200 ${
+                  status === "ACTIVE"
+                    ? "text-red-600 hover:bg-red-50"
+                    : "text-green-600 hover:bg-green-50"
+                }`}
+                title={`Click to ${
+                  status === "ACTIVE" ? "deactivate" : "activate"
+                } company`}
               >
                 {status === "ACTIVE" ? "📴" : "✅"}
               </Button>
@@ -354,7 +368,7 @@ const CompaniesPage = () => {
                 menu={{
                   items: getActionMenuItems(company),
                 }}
-                trigger={['click']}
+                trigger={["click"]}
                 placement="bottomRight"
               >
                 <Button
@@ -391,7 +405,9 @@ const CompaniesPage = () => {
   const table = useReactTable({
     data: filteredData,
     columns,
-    pageCount: companiesData ? Math.ceil(companiesData.total / pagination.pageSize) : -1,
+    pageCount: companiesData
+      ? Math.ceil(companiesData.total / pagination.pageSize)
+      : -1,
     state: {
       sorting,
       columnFilters,
@@ -504,7 +520,8 @@ const CompaniesPage = () => {
       return;
     }
 
-    const newStatus = companyToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const newStatus =
+      companyToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
     statusUpdateMutation.mutate(
       {
@@ -532,27 +549,31 @@ const CompaniesPage = () => {
 
   // Handle add company navigation
   const handleAddCompany = () => {
-    router.push('/admin/addcompany');
+    router.push("/admin/addcompany");
   };
 
   // Get action menu items for each row
   const getActionMenuItems = (company: Company) => [
     {
-      key: 'view',
+      key: "view",
       icon: <EyeOutlined />,
-      label: 'View',
+      label: "View",
       onClick: () => handleView(company),
     },
     {
-      key: 'edit',
+      key: "edit",
       icon: <EditOutlined />,
-      label: 'Edit',
+      label: "Edit",
       onClick: () => handleEdit(company),
     },
     {
-      key: 'delete',
-      icon: deleteMutation.isPending ? <span className="animate-spin">⏳</span> : <DeleteOutlined />,
-      label: deleteMutation.isPending ? 'Deleting...' : 'Delete',
+      key: "delete",
+      icon: deleteMutation.isPending ? (
+        <span className="animate-spin">⏳</span>
+      ) : (
+        <DeleteOutlined />
+      ),
+      label: deleteMutation.isPending ? "Deleting..." : "Delete",
       danger: true,
       disabled: deleteMutation.isPending,
       onClick: () => handleDelete(company),
@@ -585,7 +606,9 @@ const CompaniesPage = () => {
             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
               <DeleteOutlined className="text-red-600 text-lg" />
             </div>
-            <span className="text-lg font-semibold text-gray-900">Delete Company</span>
+            <span className="text-lg font-semibold text-gray-900">
+              Delete Company
+            </span>
           </div>
         }
         open={isDeleteModalOpen}
@@ -608,9 +631,13 @@ const CompaniesPage = () => {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{companyToDelete.name}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {companyToDelete.name}
+                    </h4>
                     <p className="text-sm text-gray-500">
-                      ID: {companyToDelete.id} • {companyToDelete.zone.city.name}, {companyToDelete.zone.name}
+                      ID: {companyToDelete.id} •{" "}
+                      {companyToDelete.zone.city.name},{" "}
+                      {companyToDelete.zone.name}
                     </p>
                   </div>
                 </div>
@@ -621,7 +648,8 @@ const CompaniesPage = () => {
                   <div>
                     <p className="text-red-800 font-medium text-sm">Warning</p>
                     <p className="text-red-700 text-sm">
-                      This action cannot be undone. All data associated with this company will be permanently deleted.
+                      This action cannot be undone. All data associated with
+                      this company will be permanently deleted.
                     </p>
                   </div>
                 </div>
@@ -655,16 +683,22 @@ const CompaniesPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${companyToUpdateStatus?.status === "ACTIVE"
-              ? "bg-red-100"
-              : "bg-green-100"
-              }`}>
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                companyToUpdateStatus?.status === "ACTIVE"
+                  ? "bg-red-100"
+                  : "bg-green-100"
+              }`}
+            >
               <span className="text-lg">
                 {companyToUpdateStatus?.status === "ACTIVE" ? "📴" : "✅"}
               </span>
             </div>
             <span className="text-lg font-semibold text-gray-900">
-              {companyToUpdateStatus?.status === "ACTIVE" ? "Deactivate" : "Activate"} Company
+              {companyToUpdateStatus?.status === "ACTIVE"
+                ? "Deactivate"
+                : "Activate"}{" "}
+              Company
             </span>
           </div>
         }
@@ -680,7 +714,9 @@ const CompaniesPage = () => {
               <p className="text-gray-700 mb-2">
                 Are you sure you want to{" "}
                 <strong>
-                  {companyToUpdateStatus.status === "ACTIVE" ? "deactivate" : "activate"}
+                  {companyToUpdateStatus.status === "ACTIVE"
+                    ? "deactivate"
+                    : "activate"}
                 </strong>{" "}
                 the company:
               </p>
@@ -692,37 +728,53 @@ const CompaniesPage = () => {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{companyToUpdateStatus.name}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {companyToUpdateStatus.name}
+                    </h4>
                     <p className="text-sm text-gray-500">
-                      ID: {companyToUpdateStatus.id} • {companyToUpdateStatus.zone.city.name}, {companyToUpdateStatus.zone.name}
+                      ID: {companyToUpdateStatus.id} •{" "}
+                      {companyToUpdateStatus.zone.city.name},{" "}
+                      {companyToUpdateStatus.zone.name}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className={`mt-4 p-3 rounded-lg border ${companyToUpdateStatus.status === "ACTIVE"
-                ? "bg-red-50 border-red-200"
-                : "bg-green-50 border-green-200"
-                }`}>
+              <div
+                className={`mt-4 p-3 rounded-lg border ${
+                  companyToUpdateStatus.status === "ACTIVE"
+                    ? "bg-red-50 border-red-200"
+                    : "bg-green-50 border-green-200"
+                }`}
+              >
                 <div className="flex items-start gap-2">
                   <span className="text-lg">
                     {companyToUpdateStatus.status === "ACTIVE" ? "⚠️" : "ℹ️"}
                   </span>
                   <div>
-                    <p className={`font-medium text-sm ${companyToUpdateStatus.status === "ACTIVE"
-                      ? "text-red-800"
-                      : "text-green-800"
-                      }`}>
+                    <p
+                      className={`font-medium text-sm ${
+                        companyToUpdateStatus.status === "ACTIVE"
+                          ? "text-red-800"
+                          : "text-green-800"
+                      }`}
+                    >
                       Status Change
                     </p>
-                    <p className={`text-sm ${companyToUpdateStatus.status === "ACTIVE"
-                      ? "text-red-700"
-                      : "text-green-700"
-                      }`}>
+                    <p
+                      className={`text-sm ${
+                        companyToUpdateStatus.status === "ACTIVE"
+                          ? "text-red-700"
+                          : "text-green-700"
+                      }`}
+                    >
                       This will change the company status from{" "}
                       <strong>{companyToUpdateStatus.status}</strong> to{" "}
                       <strong>
-                        {companyToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"}
-                      </strong>.
+                        {companyToUpdateStatus.status === "ACTIVE"
+                          ? "INACTIVE"
+                          : "ACTIVE"}
+                      </strong>
+                      .
                     </p>
                   </div>
                 </div>
@@ -747,14 +799,21 @@ const CompaniesPage = () => {
                     ? "bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                     : "bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700"
                 }
-                icon={statusUpdateMutation.isPending ? null : (
-                  companyToUpdateStatus.status === "ACTIVE" ? "📴" : "✅"
-                )}
+                icon={
+                  statusUpdateMutation.isPending
+                    ? null
+                    : companyToUpdateStatus.status === "ACTIVE"
+                    ? "📴"
+                    : "✅"
+                }
               >
                 {statusUpdateMutation.isPending
                   ? "Updating..."
-                  : `${companyToUpdateStatus.status === "ACTIVE" ? "Deactivate" : "Activate"} Company`
-                }
+                  : `${
+                      companyToUpdateStatus.status === "ACTIVE"
+                        ? "Deactivate"
+                        : "Activate"
+                    } Company`}
               </Button>
             </div>
           </div>
@@ -770,7 +829,6 @@ const CompaniesPage = () => {
                   Companies
                 </Title>
               </div>
-
             </div>
             <div className="flex items-center gap-3">
               <Button
@@ -800,7 +858,9 @@ const CompaniesPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Status:</span>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Status:
+              </span>
               <Select
                 placeholder="All"
                 className="w-32"
@@ -816,11 +876,17 @@ const CompaniesPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Show:</span>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Show:
+              </span>
               <Select
                 value={pagination.pageSize}
                 onChange={(value) => {
-                  setPagination({ ...pagination, pageSize: value, pageIndex: 0 });
+                  setPagination({
+                    ...pagination,
+                    pageSize: value,
+                    pageIndex: 0,
+                  });
                 }}
                 className="w-20"
                 size="large"
@@ -859,7 +925,10 @@ const CompaniesPage = () => {
               <table className="w-full border-collapse">
                 <thead>
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id} className="bg-gray-50 border-b border-gray-200">
+                    <tr
+                      key={headerGroup.id}
+                      className="bg-gray-50 border-b border-gray-200"
+                    >
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
@@ -872,7 +941,8 @@ const CompaniesPage = () => {
                                 className: header.column.getCanSort()
                                   ? "cursor-pointer select-none hover:text-blue-600 transition-colors duration-200 flex items-center gap-2"
                                   : "flex items-center gap-2",
-                                onClick: header.column.getToggleSortingHandler(),
+                                onClick:
+                                  header.column.getToggleSortingHandler(),
                               }}
                             >
                               {flexRender(
@@ -896,11 +966,15 @@ const CompaniesPage = () => {
                   {table.getRowModel().rows.map((row, index) => (
                     <tr
                       key={row.id}
-                      className={`transition-colors duration-200 hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                        }`}
+                      className={`transition-colors duration-200 hover:bg-blue-50 ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -915,8 +989,12 @@ const CompaniesPage = () => {
               {filteredData.length === 0 && !isLoading && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 text-6xl mb-4">📊</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No companies found</h3>
-                  <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No companies found
+                  </h3>
+                  <p className="text-gray-500">
+                    Try adjusting your search or filter criteria
+                  </p>
                 </div>
               )}
             </div>
@@ -925,14 +1003,20 @@ const CompaniesPage = () => {
           {/* Pagination */}
           <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">{pagination.pageIndex * pagination.pageSize + 1}</span> to{" "}
+              Showing{" "}
+              <span className="font-medium">
+                {pagination.pageIndex * pagination.pageSize + 1}
+              </span>{" "}
+              to{" "}
               <span className="font-medium">
                 {Math.min(
                   (pagination.pageIndex + 1) * pagination.pageSize,
                   companiesData?.total || 0
                 )}
               </span>{" "}
-              of <span className="font-medium">{companiesData?.total || 0}</span> companies
+              of{" "}
+              <span className="font-medium">{companiesData?.total || 0}</span>{" "}
+              companies
             </div>
 
             <div className="flex items-center space-x-2">
@@ -959,9 +1043,7 @@ const CompaniesPage = () => {
                   {table.getState().pagination.pageIndex + 1}
                 </span>
                 <span className="text-sm">of</span>
-                <span className="font-semibold">
-                  {table.getPageCount()}
-                </span>
+                <span className="font-semibold">{table.getPageCount()}</span>
               </span>
 
               <Button

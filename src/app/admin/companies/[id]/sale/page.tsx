@@ -14,30 +14,19 @@ import {
   ColumnFiltersState,
   PaginationState,
 } from "@tanstack/react-table";
-import { Input, Button, Tag, Space, Card, Typography, Dropdown } from "antd";
+import { Input, Button,  Card, Typography, Dropdown } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { useRouter } from "next/navigation";
 
-// Try importing icons differently
-let SearchOutlined: any, ReloadOutlined: any, MoreOutlined: any, EditOutlined: any, EyeOutlined: any, ArrowLeftOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  SearchOutlined = icons.SearchOutlined;
-  ReloadOutlined = icons.ReloadOutlined;
-  MoreOutlined = icons.MoreOutlined;
-  EditOutlined = icons.EditOutlined;
-  EyeOutlined = icons.EyeOutlined;
-  ArrowLeftOutlined = icons.ArrowLeftOutlined;
-} catch (e) {
-  // Fallback if icons don't load
-  SearchOutlined = () => "🔍";
-  ReloadOutlined = () => "🔄";
-  MoreOutlined = () => "⋯";
-  EditOutlined = () => "✏️";
-  EyeOutlined = () => "👁️";
-  ArrowLeftOutlined = () => "←";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  EditOutlined,
+  EyeOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -174,7 +163,7 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
   const columnHelper = createColumnHelper<DealerSale>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<DealerSale, any>[]>(
+  const columns = useMemo<ColumnDef<DealerSale, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
     () => [
       columnHelper.accessor("id", {
         header: "Sale ID",

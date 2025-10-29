@@ -7,32 +7,18 @@ import { ApiCall } from "@/services/api";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-// Icons
-let ArrowLeftOutlined: any, PlusOutlined: any, EyeOutlined: any, EditOutlined: any, DeleteOutlined: any, SearchOutlined: any, ShoppingCartOutlined: any, UserOutlined: any, CalendarOutlined: any, TagOutlined: any;
-try {
-    const icons = require("@ant-design/icons");
-    ArrowLeftOutlined = icons.ArrowLeftOutlined;
-    PlusOutlined = icons.PlusOutlined;
-    EyeOutlined = icons.EyeOutlined;
-    EditOutlined = icons.EditOutlined;
-    DeleteOutlined = icons.DeleteOutlined;
-    SearchOutlined = icons.SearchOutlined;
-    ShoppingCartOutlined = icons.ShoppingCartOutlined;
-    UserOutlined = icons.UserOutlined;
-    CalendarOutlined = icons.CalendarOutlined;
-    TagOutlined = icons.TagOutlined;
-} catch (e) {
-    ArrowLeftOutlined = () => "←";
-    PlusOutlined = () => "+";
-    EyeOutlined = () => "👁";
-    EditOutlined = () => "✏";
-    DeleteOutlined = () => "🗑";
-    SearchOutlined = () => "🔍";
-    ShoppingCartOutlined = () => "🛒";
-    UserOutlined = () => "👤";
-    CalendarOutlined = () => "📅";
-    TagOutlined = () => "🏷";
-}
+import {
+  ArrowLeftOutlined,
+  PlusOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  TagOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -127,7 +113,7 @@ const fetchCustomerSales = async (
         search?: string;
     }
 ): Promise<PaginatedSalesResponse> => {
-    const whereSearchInput: any = {
+    const whereSearchInput: Record<string, any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
         dealer_id: dealerId,
     };
 

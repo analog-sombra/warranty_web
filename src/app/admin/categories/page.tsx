@@ -22,26 +22,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 // Try importing icons differently
-let SearchOutlined: any,
-  ReloadOutlined: any,
-  MoreOutlined: any,
-  EditOutlined: any,
-  DeleteOutlined: any;
-try {
-  const icons = require("@ant-design/icons");
-  SearchOutlined = icons.SearchOutlined;
-  ReloadOutlined = icons.ReloadOutlined;
-  MoreOutlined = icons.MoreOutlined;
-  EditOutlined = icons.EditOutlined;
-  DeleteOutlined = icons.DeleteOutlined;
-} catch {
-  // Fallback if icons don't load
-  SearchOutlined = () => "🔍";
-  ReloadOutlined = () => "🔄";
-  MoreOutlined = () => "⋯";
-  EditOutlined = () => "✏️";
-  DeleteOutlined = () => "🗑️";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  MoreOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -316,7 +303,7 @@ const CategoriesPage = () => {
   const columnHelper = createColumnHelper<Category>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Category, any>[]>(
+  const columns = useMemo<ColumnDef<Category, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
     () => [
       columnHelper.accessor("id", {
         header: "ID",

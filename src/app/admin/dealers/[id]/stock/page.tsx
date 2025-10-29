@@ -19,22 +19,12 @@ import { useQuery } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { useRouter } from "next/navigation";
 
-// Icons
-let SearchOutlined: any, ReloadOutlined: any, EyeOutlined: any, ArrowLeftOutlined: any, PlusOutlined: any;
-try {
-    const icons = require("@ant-design/icons");
-    SearchOutlined = icons.SearchOutlined;
-    ReloadOutlined = icons.ReloadOutlined;
-    EyeOutlined = icons.EyeOutlined;
-    ArrowLeftOutlined = icons.ArrowLeftOutlined;
-    PlusOutlined = icons.PlusOutlined;
-} catch (e) {
-    SearchOutlined = () => "🔍";
-    ReloadOutlined = () => "🔄";
-    EyeOutlined = () => "👁️";
-    ArrowLeftOutlined = () => "←";
-    PlusOutlined = () => "+";
-}
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  EyeOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -120,7 +110,7 @@ const fetchDealerStock = async (
     take: number,
 ): Promise<{ data: DealerStock[]; total: number }> => {
 
-    const whereSearchInput: any = {
+    const whereSearchInput: Record<string, any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
         dealer_id: dealerId,
         status: "ACTIVE"
     };
@@ -221,7 +211,7 @@ const DealerStockPage: React.FC<DealerStockPageProps> = ({ params }) => {
     // Table columns
     const columnHelper = createColumnHelper<DealerStock>();
 
-    const columns = useMemo<ColumnDef<DealerStock, any>[]>(
+    const columns = useMemo<ColumnDef<DealerStock, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
         () => [
             columnHelper.accessor("id", {
                 header: "Stock ID",
