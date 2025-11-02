@@ -150,7 +150,7 @@ const EditUserPage = () => {
     mutationFn: (input: any) => updateUserApi(userId, input),
     onSuccess: () => {
       toast.success("User updated successfully!");
-      router.push(`/admin/companies/${companyId}/users`);
+      router.push(`/company/${companyId}/users`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to update user: ${error.message}`);
@@ -187,7 +187,7 @@ const EditUserPage = () => {
   };
 
   const handleCancel = () => {
-    router.push(`/admin/companies/${companyId}/users`);
+    router.push(`/company/${companyId}/users`);
   };
 
   const getRoleDisplayName = (role: string) => {

@@ -14,7 +14,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 import {
@@ -127,11 +127,12 @@ interface DealerDetailsPageProps {
   }>;
 }
 
-const DealerDetailsPage: React.FC<DealerDetailsPageProps> = ({ params }) => {
+const DealerDetailsPage: React.FC<DealerDetailsPageProps> = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const unwrappedParams = React.use(params) as { id: string };
-  const dealerId = parseInt(unwrappedParams.id);
+  const params = useParams();
+
+  const dealerId = parseInt(params.id as string);
   const companyId: number = parseInt(getCookie("company")?.toString() || "0");
 
   // State

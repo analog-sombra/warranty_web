@@ -5,7 +5,7 @@ import { Card, Typography, Button, Spin } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { FormProvider, useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
@@ -14,10 +14,7 @@ import { TextInput } from "@/components/form/inputfields/textinput";
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { onFormError } from "@/utils/methods";
 
-import {
-  ArrowLeftOutlined,
-  SaveOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -106,7 +103,10 @@ const fetchDealerById = async (id: number): Promise<DealerDetails> => {
   return response.data.getCompanyById;
 };
 
-const updateDealerApi = async (id: number, data: UpdateDealerInput): Promise<unknown> => {
+const updateDealerApi = async (
+  id: number,
+  data: UpdateDealerInput
+): Promise<unknown> => {
   const response = await ApiCall<{ updateCompany: unknown }>({
     query: UPDATE_DEALER,
     variables: {
@@ -128,10 +128,12 @@ interface EditDealerPageProps {
   };
 }
 
-const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
+const EditDealerPage: React.FC<EditDealerPageProps> = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const dealerId = parseInt(params.id);
+  const params = useParams();
+
+  const dealerId = parseInt(params.id as string);
 
   // Form setup
   const methods = useForm<AddCompanyForm>({
@@ -171,7 +173,7 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
       toast.success("Dealer updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["dealer", dealerId] });
       queryClient.invalidateQueries({ queryKey: ["dealers"] });
-      router.push(`/admin/dealers/${dealerId}`);
+      router.push(`/dealer/${dealerId}`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to update dealer: ${error.message}`);
@@ -183,11 +185,12 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
     queryKey: ["zonedata"],
     queryFn: async () => {
       const response = await ApiCall({
-        query: "query GetAllZone($whereSearchInput: WhereZoneSearchInput!) {getAllZone(whereSearchInput: $whereSearchInput) {id, name}}",
+        query:
+          "query GetAllZone($whereSearchInput: WhereZoneSearchInput!) {getAllZone(whereSearchInput: $whereSearchInput) {id, name}}",
         variables: {
           whereSearchInput: {
-            status: "ACTIVE"
-          }
+            status: "ACTIVE",
+          },
         },
       });
 
@@ -199,9 +202,10 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
         throw new Error("Value not found in response");
       }
 
-      return (response.data as Record<string, unknown>)[
-        "getAllZone"
-      ] as { id: number; name: string }[];
+      return (response.data as Record<string, unknown>)["getAllZone"] as {
+        id: number;
+        name: string;
+      }[];
     },
     refetchOnWindowFocus: false,
   });
@@ -252,7 +256,7 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
 
   // Handle back navigation
   const handleBack = () => {
-    router.push(`/admin/dealers/${dealerId}`);
+    router.push(`/dealer/${dealerId}`);
   };
 
   if (isDealerLoading) {
@@ -270,7 +274,10 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
           <Card>
             <div className="text-center py-8">
               <p className="text-red-500 mb-4">
-                Error: {dealerError instanceof Error ? dealerError.message : "Unknown error"}
+                Error:{" "}
+                {dealerError instanceof Error
+                  ? dealerError.message
+                  : "Unknown error"}
               </p>
               <Button onClick={handleBack} type="primary">
                 Back to Dealer
@@ -318,7 +325,9 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
                 <Title level={3} className="!mb-0 text-gray-900">
                   Edit Dealer: {dealer.name}
                 </Title>
-                <p className="text-gray-500 mt-1">Update dealer information and settings</p>
+                <p className="text-gray-500 mt-1">
+                  Update dealer information and settings
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -382,9 +391,9 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
                         options={
                           zonedata.data
                             ? zonedata.data.map((zone) => ({
-                              label: zone.name,
-                              value: zone.id.toString(),
-                            }))
+                                label: zone.name,
+                                value: zone.id.toString(),
+                              }))
                             : []
                         }
                         placeholder="Select zone"
@@ -570,7 +579,8 @@ const EditDealerPage: React.FC<EditDealerPageProps> = ({ params }) => {
                               </p>
                               <p className="text-xs text-gray-600 mt-1">
                                 This person will be the primary contact for all
-                                dealer-related communications and warranty claims.
+                                dealer-related communications and warranty
+                                claims.
                               </p>
                             </div>
                           </div>

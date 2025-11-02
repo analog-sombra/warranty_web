@@ -531,12 +531,12 @@ const UsersPage = () => {
 
   // Handle edit action
   const handleEdit = (user: User) => {
-    router.push(`/admin/companies/${companyId}/users/${user.id}/edit`);
+    router.push(`/company/${companyId}/users/${user.id}/edit`);
   };
 
   // Handle view action
   const handleView = (user: User) => {
-    router.push(`/admin/companies/${companyId}/users/${user.id}`);
+    router.push(`/company/${companyId}/users/${user.id}`);
   };
 
   // Handle delete action
@@ -637,12 +637,12 @@ const UsersPage = () => {
 
   // Handle add user navigation
   const handleAddUser = () => {
-    router.push(`/admin/companies/${companyId}/users/create`);
+    router.push(`/company/${companyId}/users/create`);
   };
 
   // Handle back to company details
   const handleBackToCompany = () => {
-    router.push(`/admin/companies/${companyId}`);
+    router.push(`/company/${companyId}`);
   };
 
   // Get action menu items for each row

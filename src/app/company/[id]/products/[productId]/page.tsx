@@ -93,11 +93,11 @@ const ProductDetailsPage = () => {
   });
 
   const handleBack = () => {
-    router.push(`/admin/companies/${companyId}/product`);
+    router.push(`/company/${companyId}/product`);
   };
 
   const handleEdit = () => {
-    router.push(`/admin/companies/${companyId}/product/${productId}/edit`);
+    router.push(`/company/${companyId}/product/${productId}/edit`);
   };
 
   const formatWarrantyTime = (days: number) => {

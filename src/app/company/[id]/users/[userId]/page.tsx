@@ -95,11 +95,11 @@ const UserDetailsPage = () => {
   });
 
   const handleBack = () => {
-    router.push(`/admin/companies/${companyId}/users`);
+    router.push(`/company/${companyId}/users`);
   };
 
   const handleEdit = () => {
-    router.push(`/admin/companies/${companyId}/users/${userId}/edit`);
+    router.push(`/company/${companyId}/users/${userId}/edit`);
   };
 
   const getRoleColor = (role: string) => {

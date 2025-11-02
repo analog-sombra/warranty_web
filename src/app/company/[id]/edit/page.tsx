@@ -227,7 +227,7 @@ const EditCompanyPage = () => {
       // Invalidate company queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       queryClient.invalidateQueries({ queryKey: ["company", companyId] });
-      router.push("/admin/companies");
+      router.push("/company");
     },
     onError: (error: Error) => {
       toast.error(`Failed to update company: ${error.message}`);
@@ -260,7 +260,7 @@ const EditCompanyPage = () => {
   };
 
   const handleCancel = () => {
-    router.push("/admin/companies");
+    router.push("/compant");
   };
 
   // Error states

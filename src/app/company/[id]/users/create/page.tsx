@@ -172,7 +172,7 @@ const CreateUserPage = () => {
     },
     onSuccess: (data) => {
       toast.success(`User created and connected to company successfully!`);
-      router.push(`/admin/companies/${companyId}/users`);
+      router.push(`/company/${companyId}/users`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to create user: ${error.message}`);
@@ -205,7 +205,7 @@ const CreateUserPage = () => {
   };
 
   const handleCancel = () => {
-    router.push(`/admin/companies/${companyId}/users`);
+    router.push(`/company/${companyId}/users`);
   };
 
   if (isCompanyLoading) {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -10,14 +10,25 @@ import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { onFormError } from "@/utils/methods";
-import { object, string, pipe, InferInput, minLength, maxLength, regex } from "valibot";
+import {
+  object,
+  string,
+  pipe,
+  InferInput,
+  minLength,
+  maxLength,
+  regex,
+} from "valibot";
 import { toast } from "react-toastify";
 
 const { Title } = Typography;
 
 // Validation Schema
 const UpdateUserSchema = object({
-  name: pipe(string("Enter User Name"), minLength(2, "Name must be at least 2 characters")),
+  name: pipe(
+    string("Enter User Name"),
+    minLength(2, "Name must be at least 2 characters")
+  ),
   contact1: pipe(
     string("Enter Contact Number"),
     minLength(10, "Contact number must be 10 digits"),
@@ -133,11 +144,12 @@ interface EditUserPageProps {
   }>;
 }
 
-const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
+const EditDealerUserPage: React.FC<EditUserPageProps> = () => {
   const router = useRouter();
-  const unwrappedParams = React.use(params) as { id: string; userId: string };
-  const dealerId = parseInt(unwrappedParams.id);
-  const userId = parseInt(unwrappedParams.userId);
+  const params = useParams();
+
+  const dealerId = parseInt(params.id as string);
+  const userId = parseInt(params.userId as string);
 
   const methods = useForm<UpdateUserForm>({
     resolver: valibotResolver(UpdateUserSchema),
@@ -161,7 +173,7 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
     mutationFn: (input: any) => updateUserApi(userId, input),
     onSuccess: () => {
       toast.success("User updated successfully!");
-      router.push(`/admin/dealers/${dealerId}/users`);
+      router.push(`/dealer/${dealerId}/users`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to update user: ${error.message}`);
@@ -197,7 +209,7 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
   };
 
   const handleCancel = () => {
-    router.push(`/admin/dealers/${dealerId}/users`);
+    router.push(`/dealer/${dealerId}/users`);
   };
 
   const getRoleDisplayName = (role: string) => {
@@ -244,7 +256,10 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
         {/* Form */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit, onFormError)} className="space-y-8">
+            <form
+              onSubmit={methods.handleSubmit(onSubmit, onFormError)}
+              className="space-y-8"
+            >
               {/* Main Form Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* User Information */}
@@ -291,13 +306,15 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
                                 size="large"
                               />
                               {error && (
-                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                                <p className="text-xs text-red-500 mt-1">
+                                  {error.message?.toString()}
+                                </p>
                               )}
                             </div>
                           )}
                         />
                       </div>
-                      
+
                       {/* Primary Contact Input */}
                       <div className="flex flex-col">
                         <label className="text-sm font-normal mb-2 block">
@@ -318,12 +335,17 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
                                 size="large"
                                 onChange={(e: any) => {
                                   // Only allow numbers
-                                  const value = e.target.value.replace(/[^0-9]/g, "");
+                                  const value = e.target.value.replace(
+                                    /[^0-9]/g,
+                                    ""
+                                  );
                                   field.onChange(value);
                                 }}
                               />
                               {error && (
-                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                                <p className="text-xs text-red-500 mt-1">
+                                  {error.message?.toString()}
+                                </p>
                               )}
                             </div>
                           )}
@@ -386,9 +408,18 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
                               Current Settings
                             </p>
                             <ul className="text-xs text-blue-600 mt-1 space-y-1">
-                              <li>• Current Role: {getRoleDisplayName(userData?.role || "")}</li>
-                              <li>• is_manufacturer: {userData?.is_manufacturer ? "true" : "false"}</li>
-                              <li>• is_dealer: {userData?.is_dealer ? "true" : "false"}</li>
+                              <li>
+                                • Current Role:{" "}
+                                {getRoleDisplayName(userData?.role || "")}
+                              </li>
+                              <li>
+                                • is_manufacturer:{" "}
+                                {userData?.is_manufacturer ? "true" : "false"}
+                              </li>
+                              <li>
+                                • is_dealer:{" "}
+                                {userData?.is_dealer ? "true" : "false"}
+                              </li>
                               <li>• Status: {userData?.status}</li>
                             </ul>
                           </div>
@@ -427,7 +458,9 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-gray-600 font-semibold text-sm">📞 Contact 2</span>
+                          <span className="text-gray-600 font-semibold text-sm">
+                            📞 Contact 2
+                          </span>
                         </div>
                         <p className="text-gray-700 text-sm">
                           {userData.contact2 || "Not provided"}
@@ -436,7 +469,9 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
 
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-gray-600 font-semibold text-sm">📧 Email</span>
+                          <span className="text-gray-600 font-semibold text-sm">
+                            📧 Email
+                          </span>
                         </div>
                         <p className="text-gray-700 text-sm">
                           {userData.email || "Not provided"}
@@ -445,7 +480,9 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
 
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-gray-600 font-semibold text-sm">🏠 Address</span>
+                          <span className="text-gray-600 font-semibold text-sm">
+                            🏠 Address
+                          </span>
                         </div>
                         <p className="text-gray-700 text-sm">
                           {userData.address || "Not provided"}
@@ -454,10 +491,14 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
 
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-gray-600 font-semibold text-sm">📍 Location</span>
+                          <span className="text-gray-600 font-semibold text-sm">
+                            📍 Location
+                          </span>
                         </div>
                         <p className="text-gray-700 text-sm">
-                          {userData.zone ? `${userData.zone.city.name}, ${userData.zone.name}` : "Not assigned"}
+                          {userData.zone
+                            ? `${userData.zone.city.name}, ${userData.zone.name}`
+                            : "Not assigned"}
                         </p>
                       </div>
                     </div>
@@ -485,44 +526,57 @@ const EditDealerUserPage: React.FC<EditUserPageProps> = ({ params }) => {
                     Dealer Role Descriptions
                   </h2>
                   <p className="text-blue-700 text-sm mt-1">
-                    Understanding different dealer user roles and their responsibilities
+                    Understanding different dealer user roles and their
+                    responsibilities
                   </p>
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-purple-600 font-semibold">👑 Admin</span>
+                        <span className="text-purple-600 font-semibold">
+                          👑 Admin
+                        </span>
                       </div>
                       <p className="text-purple-700 text-sm">
-                        Full dealer system access, user management, and administrative privileges
+                        Full dealer system access, user management, and
+                        administrative privileges
                       </p>
                     </div>
 
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-green-600 font-semibold">💰 Accounts</span>
+                        <span className="text-green-600 font-semibold">
+                          💰 Accounts
+                        </span>
                       </div>
                       <p className="text-green-700 text-sm">
-                        Financial operations, dealer billing, and accounting management
+                        Financial operations, dealer billing, and accounting
+                        management
                       </p>
                     </div>
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-blue-600 font-semibold">👥 Manager</span>
+                        <span className="text-blue-600 font-semibold">
+                          👥 Manager
+                        </span>
                       </div>
                       <p className="text-blue-700 text-sm">
-                        Dealer operations management, inventory oversight, and team coordination
+                        Dealer operations management, inventory oversight, and
+                        team coordination
                       </p>
                     </div>
 
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-orange-600 font-semibold">📈 Sales</span>
+                        <span className="text-orange-600 font-semibold">
+                          📈 Sales
+                        </span>
                       </div>
                       <p className="text-orange-700 text-sm">
-                        Customer relationships, sales operations, and warranty processing
+                        Customer relationships, sales operations, and warranty
+                        processing
                       </p>
                     </div>
                   </div>

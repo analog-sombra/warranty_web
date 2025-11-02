@@ -486,12 +486,12 @@ const ProductsPage = () => {
 
   // Handle edit action
   const handleEdit = (product: Product) => {
-    router.push(`/admin/companies/${companyId}/products/${product.id}/edit`);
+    router.push(`/company/${companyId}/products/${product.id}/edit`);
   };
 
   // Handle view action
   const handleView = (product: Product) => {
-    router.push(`/admin/companies/${companyId}/products/${product.id}`);
+    router.push(`/company/${companyId}/products/${product.id}`);
   };
 
   // Handle delete action
@@ -592,12 +592,12 @@ const ProductsPage = () => {
 
   // Handle add product navigation
   const handleAddProduct = () => {
-    router.push(`/admin/companies/${companyId}/products/create`);
+    router.push(`/company/${companyId}/products/create`);
   };
 
   // Handle back to company details
   const handleBackToCompany = () => {
-    router.push(`/admin/companies/${companyId}`);
+    router.push(`/company/${companyId}`);
   };
 
   // Get action menu items for each row

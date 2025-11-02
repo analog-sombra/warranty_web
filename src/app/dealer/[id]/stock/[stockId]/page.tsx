@@ -115,6 +115,7 @@ const DealerStockViewPage: React.FC<DealerStockViewPageProps> = ({
   const dealerId = parseInt(unwrappedParams.id);
   const stockId = parseInt(unwrappedParams.stockId);
 
+
   // Fetch stock details
   const {
     data: stockData,
@@ -127,7 +128,7 @@ const DealerStockViewPage: React.FC<DealerStockViewPageProps> = ({
   });
 
   const handleBack = () => {
-    router.push(`/admin/dealers/${dealerId}/stock`);
+    router.push(`/dealer/${dealerId}/stock`);
   };
 
   if (isLoading) {
@@ -368,7 +369,7 @@ const DealerStockViewPage: React.FC<DealerStockViewPageProps> = ({
                   type="link"
                   className="p-0 h-auto"
                   onClick={() =>
-                    router.push(`/admin/dealers/${stockData.dealer.id}`)
+                    router.push(`/dealer/${stockData.dealer.id}`)
                   }
                 >
                   View Dealer Profile →

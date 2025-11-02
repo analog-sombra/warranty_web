@@ -14,10 +14,10 @@ import {
   ColumnFiltersState,
   PaginationState,
 } from "@tanstack/react-table";
-import { Input, Button,  Card, Typography, Dropdown } from "antd";
+import { Input, Button, Card, Typography, Dropdown } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import {
   SearchOutlined,
@@ -114,7 +114,6 @@ const fetchDealerSales = async (
     throw new Error(response.message);
   }
 
-
   return response.data.getPaginatedDealerSales;
 };
 
@@ -124,10 +123,12 @@ interface DealerSalesPageProps {
   };
 }
 
-const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
+const DealerSalesPage: React.FC<DealerSalesPageProps> = () => {
   // Router for navigation
   const router = useRouter();
-  const companyId = parseInt(params.id);
+  const params = useParams();
+  const companyId = parseInt(params.id as string);
+  console.log("Company ID:", companyId);
 
   // State management
   const [globalFilter, setGlobalFilter] = useState("");
@@ -175,7 +176,9 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
               </span>
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{info.getValue()}</div>
+              <div className="font-semibold text-gray-900">
+                {info.getValue()}
+              </div>
               <div className="text-xs text-gray-500">Sale ID</div>
             </div>
           </div>
@@ -187,7 +190,9 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
         cell: (info) => (
           <div>
             <div className="font-semibold text-gray-900">{info.getValue()}</div>
-            <div className="text-xs text-gray-500">ID: {info.row.original.product.id}</div>
+            <div className="text-xs text-gray-500">
+              ID: {info.row.original.product.id}
+            </div>
           </div>
         ),
         size: 200,
@@ -202,7 +207,9 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
               </span>
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{info.getValue()}</div>
+              <div className="font-semibold text-gray-900">
+                {info.getValue()}
+              </div>
               <div className="text-xs text-gray-500">Dealer</div>
             </div>
           </div>
@@ -257,7 +264,7 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
                 menu={{
                   items: getActionMenuItems(sale),
                 }}
-                trigger={['click']}
+                trigger={["click"]}
                 placement="bottomRight"
               >
                 <Button
@@ -287,7 +294,9 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
   const table = useReactTable({
     data: filteredData,
     columns,
-    pageCount: salesData ? Math.ceil(salesData.total / pagination.pageSize) : -1,
+    pageCount: salesData
+      ? Math.ceil(salesData.total / pagination.pageSize)
+      : -1,
     state: {
       sorting,
       columnFilters,
@@ -319,36 +328,36 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
 
   // Handle back navigation
   const handleBack = () => {
-    router.push(`/admin/companies/${companyId}`);
+    router.push(`/company/${companyId}`);
   };
 
   // Handle add sale navigation
   const handleAddSale = () => {
-    router.push(`/admin/companies/${companyId}/sale/add`);
+    router.push(`/company/${companyId}/sale/add`);
   };
 
   // Handle view action
   const handleView = (sale: DealerSale) => {
-    router.push(`/admin/companies/${companyId}/sale/${sale.id}`);
+    router.push(`/company/${companyId}/sale/${sale.id}`);
   };
 
   // Handle edit action
   const handleEdit = (sale: DealerSale) => {
-    router.push(`/admin/companies/${companyId}/sale/${sale.id}/edit`);
+    router.push(`/company/${companyId}/sale/${sale.id}/edit`);
   };
 
   // Get action menu items for each row
   const getActionMenuItems = (sale: DealerSale) => [
     {
-      key: 'view',
+      key: "view",
       icon: <EyeOutlined />,
-      label: 'View',
+      label: "View",
       onClick: () => handleView(sale),
     },
     {
-      key: 'edit',
+      key: "edit",
       icon: <EditOutlined />,
-      label: 'Edit',
+      label: "Edit",
       onClick: () => handleEdit(sale),
     },
   ];
@@ -420,11 +429,17 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Show:</span>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Show:
+              </span>
               <select
                 value={pagination.pageSize}
                 onChange={(e) => {
-                  setPagination({ ...pagination, pageSize: Number(e.target.value), pageIndex: 0 });
+                  setPagination({
+                    ...pagination,
+                    pageSize: Number(e.target.value),
+                    pageIndex: 0,
+                  });
                 }}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               >
@@ -462,7 +477,10 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
               <table className="w-full border-collapse">
                 <thead>
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id} className="bg-gray-50 border-b border-gray-200">
+                    <tr
+                      key={headerGroup.id}
+                      className="bg-gray-50 border-b border-gray-200"
+                    >
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
@@ -475,7 +493,8 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
                                 className: header.column.getCanSort()
                                   ? "cursor-pointer select-none hover:text-green-600 transition-colors duration-200 flex items-center gap-2"
                                   : "flex items-center gap-2",
-                                onClick: header.column.getToggleSortingHandler(),
+                                onClick:
+                                  header.column.getToggleSortingHandler(),
                               }}
                             >
                               {flexRender(
@@ -504,7 +523,10 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
                       }`}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -519,8 +541,12 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
               {filteredData.length === 0 && !isLoading && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 text-6xl mb-4">💰</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No sales found</h3>
-                  <p className="text-gray-500">No dealer sales have been made by this company yet</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No sales found
+                  </h3>
+                  <p className="text-gray-500">
+                    No dealer sales have been made by this company yet
+                  </p>
                 </div>
               )}
             </div>
@@ -529,14 +555,19 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
           {/* Pagination */}
           <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">{pagination.pageIndex * pagination.pageSize + 1}</span> to{" "}
+              Showing{" "}
+              <span className="font-medium">
+                {pagination.pageIndex * pagination.pageSize + 1}
+              </span>{" "}
+              to{" "}
               <span className="font-medium">
                 {Math.min(
                   (pagination.pageIndex + 1) * pagination.pageSize,
                   salesData?.total || 0
                 )}
               </span>{" "}
-              of <span className="font-medium">{salesData?.total || 0}</span> sales
+              of <span className="font-medium">{salesData?.total || 0}</span>{" "}
+              sales
             </div>
 
             <div className="flex items-center space-x-2">
@@ -563,9 +594,7 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = ({ params }) => {
                   {table.getState().pagination.pageIndex + 1}
                 </span>
                 <span className="text-sm">of</span>
-                <span className="font-semibold">
-                  {table.getPageCount()}
-                </span>
+                <span className="font-semibold">{table.getPageCount()}</span>
               </span>
 
               <Button

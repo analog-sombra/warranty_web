@@ -18,7 +18,7 @@ import { Input, Button, Select, Card, Typography, Dropdown, Modal } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 // Icons
@@ -75,8 +75,6 @@ interface SearchPaginationInput {
   take: number;
   search?: string;
 }
-
-
 
 interface DealerInfo {
   id: number;
@@ -247,11 +245,13 @@ interface DealerUsersPageProps {
   }>;
 }
 
-const DealerUsersPage: React.FC<DealerUsersPageProps> = ({ params }) => {
+const DealerUsersPage: React.FC<DealerUsersPageProps> = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const unwrappedParams = React.use(params) as { id: string };
-  const dealerId = parseInt(unwrappedParams.id);
+  const params = useParams();
+
+  const dealerId = parseInt(params.id as string);
+  const userId: number = parseInt(getCookie("id") as string);
 
   // State management
   const [globalFilter, setGlobalFilter] = useState("");
@@ -271,6 +271,8 @@ const DealerUsersPage: React.FC<DealerUsersPageProps> = ({ params }) => {
   const [userToUpdateStatus, setUserToUpdateStatus] = useState<User | null>(
     null
   );
+
+  const companyId: number = parseInt(getCookie("company")?.toString() || "0");
 
   // Prepare search input for API
   const searchInput: SearchPaginationInput = {
@@ -583,12 +585,12 @@ const DealerUsersPage: React.FC<DealerUsersPageProps> = ({ params }) => {
 
   // Handle edit action
   const handleEdit = (user: User) => {
-    router.push(`/admin/dealers/${dealerId}/users/${user.id}/edit`);
+    router.push(`/dealer/${companyId}/users/${user.id}/edit`);
   };
 
   // Handle view action
   const handleView = (user: User) => {
-    router.push(`/admin/dealers/${dealerId}/users/${user.id}`);
+    router.push(`/dealer/${companyId}/users/${user.id}`);
   };
 
   // Handle delete action
@@ -688,12 +690,12 @@ const DealerUsersPage: React.FC<DealerUsersPageProps> = ({ params }) => {
 
   // Handle add user navigation
   const handleAddUser = () => {
-    router.push(`/admin/dealers/${dealerId}/users/create`);
+    router.push(`/dealer/${companyId}/users/create`);
   };
 
   // Handle back to dealer details
   const handleBackToDealer = () => {
-    router.push(`/admin/dealers/${dealerId}`);
+    router.push(`/dealer/${companyId}`);
   };
 
   // Get action menu items for each row

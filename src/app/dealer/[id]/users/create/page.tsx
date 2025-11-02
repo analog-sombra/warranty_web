@@ -1,24 +1,34 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Typography, Spin, Input } from "antd";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
-import { TextInput } from "@/components/form/inputfields/textinput";
 import { MultiSelect } from "@/components/form/inputfields/multiselect";
 import { onFormError } from "@/utils/methods";
-import { object, string, pipe, InferInput, minLength, maxLength, regex } from "valibot";
+import {
+  object,
+  string,
+  pipe,
+  InferInput,
+  minLength,
+  maxLength,
+  regex,
+} from "valibot";
 import { toast } from "react-toastify";
 
 const { Title } = Typography;
 
 // Validation Schema
 const AddUserSchema = object({
-  name: pipe(string("Enter User Name"), minLength(2, "Name must be at least 2 characters")),
+  name: pipe(
+    string("Enter User Name"),
+    minLength(2, "Name must be at least 2 characters")
+  ),
   contact1: pipe(
     string("Enter Contact Number"),
     minLength(10, "Contact number must be 10 digits"),
@@ -88,14 +98,12 @@ const ROLE_OPTIONS = [
 ];
 
 const createUserApi = async (input: any): Promise<any> => {
-
   const response = await ApiCall<{ createUser: any }>({
     query: CREATE_USER,
     variables: {
       inputType: input,
     },
   });
-
 
   if (!response.status) {
     console.error("CreateUser API failed:", response.message);
@@ -106,14 +114,12 @@ const createUserApi = async (input: any): Promise<any> => {
 };
 
 const createUserCompanyApi = async (input: any): Promise<any> => {
-
   const response = await ApiCall<{ createUserCompany: any }>({
     query: CREATE_USER_COMPANY,
     variables: {
       inputType: input,
     },
   });
-
 
   if (!response.status) {
     console.error("CreateUserCompany API failed:", response.message);
@@ -144,10 +150,11 @@ interface CreateUserPageProps {
   }>;
 }
 
-const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
+const CreateUserPage: React.FC<CreateUserPageProps> = () => {
   const router = useRouter();
-  const unwrappedParams = React.use(params) as { id: string };
-  const dealerId = parseInt(unwrappedParams.id);
+  const params = useParams();
+
+  const dealerId = parseInt(params.id as string);
   const userId: number = parseInt(getCookie("id") as string);
 
   const methods = useForm<AddUserForm>({
@@ -170,7 +177,6 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
   // Create mutation - handles both user creation and dealer connection
   const createMutation = useMutation({
     mutationFn: async (userInput: any) => {
-
       try {
         // Step 1: Create the user
         const createdUser = await createUserApi(userInput);
@@ -180,10 +186,12 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
           company_id: dealerId,
           user_id: createdUser.id,
           createdById: userId,
-          status: "ACTIVE"
+          status: "ACTIVE",
         };
 
-        const userCompanyConnection = await createUserCompanyApi(userCompanyInput);
+        const userCompanyConnection = await createUserCompanyApi(
+          userCompanyInput
+        );
 
         return { user: createdUser, connection: userCompanyConnection };
       } catch (error) {
@@ -192,8 +200,10 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
       }
     },
     onSuccess: (data) => {
-      toast.success(`User "${data.user.name}" created and connected to dealer successfully!`);
-      router.push(`/admin/dealers/${dealerId}/users`);
+      toast.success(
+        `User "${data.user.name}" created and connected to dealer successfully!`
+      );
+      router.push(`/dealer/${dealerId}/users`);
     },
     onError: (error: Error) => {
       console.error("User creation failed:", error);
@@ -228,7 +238,7 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
   };
 
   const handleCancel = () => {
-    router.push(`/admin/dealers/${dealerId}/users`);
+    router.push(`/dealer/${dealerId}/users`);
   };
 
   if (isDealerLoading) {
@@ -271,7 +281,10 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
         {/* Form */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit, onFormError)} className="space-y-8">
+            <form
+              onSubmit={methods.handleSubmit(onSubmit, onFormError)}
+              className="space-y-8"
+            >
               {/* Main Form Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {/* User Information */}
@@ -318,13 +331,15 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
                                 size="large"
                               />
                               {error && (
-                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                                <p className="text-xs text-red-500 mt-1">
+                                  {error.message?.toString()}
+                                </p>
                               )}
                             </div>
                           )}
                         />
                       </div>
-                      
+
                       {/* Primary Contact Input */}
                       <div className="flex flex-col">
                         <label className="text-sm font-normal mb-2 block">
@@ -345,12 +360,17 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
                                 size="large"
                                 onChange={(e: any) => {
                                   // Only allow numbers
-                                  const value = e.target.value.replace(/[^0-9]/g, "");
+                                  const value = e.target.value.replace(
+                                    /[^0-9]/g,
+                                    ""
+                                  );
                                   field.onChange(value);
                                 }}
                               />
                               {error && (
-                                <p className="text-xs text-red-500 mt-1">{error.message?.toString()}</p>
+                                <p className="text-xs text-red-500 mt-1">
+                                  {error.message?.toString()}
+                                </p>
                               )}
                             </div>
                           )}
@@ -445,44 +465,57 @@ const CreateUserPage: React.FC<CreateUserPageProps> = ({ params }) => {
                     Dealer Role Descriptions
                   </h2>
                   <p className="text-gray-700 text-sm mt-1">
-                    Understanding different dealer user roles and their responsibilities
+                    Understanding different dealer user roles and their
+                    responsibilities
                   </p>
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-purple-600 font-semibold">👑 Admin</span>
+                        <span className="text-purple-600 font-semibold">
+                          👑 Admin
+                        </span>
                       </div>
                       <p className="text-purple-700 text-sm">
-                        Full dealer system access, user management, and administrative privileges
+                        Full dealer system access, user management, and
+                        administrative privileges
                       </p>
                     </div>
 
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-green-600 font-semibold">💰 Accounts</span>
+                        <span className="text-green-600 font-semibold">
+                          💰 Accounts
+                        </span>
                       </div>
                       <p className="text-green-700 text-sm">
-                        Financial operations, dealer billing, and accounting management
+                        Financial operations, dealer billing, and accounting
+                        management
                       </p>
                     </div>
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-blue-600 font-semibold">👥 Manager</span>
+                        <span className="text-blue-600 font-semibold">
+                          👥 Manager
+                        </span>
                       </div>
                       <p className="text-blue-700 text-sm">
-                        Dealer operations management, inventory oversight, and team coordination
+                        Dealer operations management, inventory oversight, and
+                        team coordination
                       </p>
                     </div>
 
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-orange-600 font-semibold">📈 Sales</span>
+                        <span className="text-orange-600 font-semibold">
+                          📈 Sales
+                        </span>
                       </div>
                       <p className="text-orange-700 text-sm">
-                        Customer relationships, sales operations, and warranty processing
+                        Customer relationships, sales operations, and warranty
+                        processing
                       </p>
                     </div>
                   </div>

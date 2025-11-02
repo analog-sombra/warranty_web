@@ -4,12 +4,10 @@ import React from "react";
 import { Card, Typography, Button, Spin, Descriptions, Tag } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 // Icons
-import {
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -116,10 +114,12 @@ interface ViewSalePageProps {
   };
 }
 
-const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
+const ViewSalePage: React.FC<ViewSalePageProps> = () => {
   const router = useRouter();
-  const companyId = parseInt(params.id);
-  const saleId = parseInt(params.saleId);
+  const params = useParams();
+
+  const companyId = parseInt(params.id as string);
+  const saleId = parseInt(params.saleId as string);
 
   // Fetch sale details
   const {
@@ -135,13 +135,8 @@ const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
 
   // Handle back navigation
   const handleBack = () => {
-    router.push(`/admin/companies/${companyId}/sale`);
+    router.push(`/company/${companyId}/sale`);
   };
-
-  // Handle edit
-  // const handleEdit = () => {
-  //   router.push(`/admin/companies/${companyId}/sale/${saleId}/edit`);
-  // };
 
   if (isLoading) {
     return (
@@ -158,7 +153,8 @@ const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
           <Card>
             <div className="text-center py-8">
               <p className="text-red-500 mb-4">
-                Error: {error instanceof Error ? error.message : "Unknown error"}
+                Error:{" "}
+                {error instanceof Error ? error.message : "Unknown error"}
               </p>
               <Button onClick={handleBack} type="primary">
                 Back to Sales
@@ -273,10 +269,14 @@ const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
           <Card title="Product Information" className="shadow-sm">
             <Descriptions column={1} size="middle">
               <Descriptions.Item label="Product Name">
-                <Text strong className="text-gray-900">{sale.product.name}</Text>
+                <Text strong className="text-gray-900">
+                  {sale.product.name}
+                </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Category">
-                <Tag color="orange">{sale.product.subcategory.product_category.name}</Tag>
+                <Tag color="orange">
+                  {sale.product.subcategory.product_category.name}
+                </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Subcategory">
                 <Tag color="cyan">{sale.product.subcategory.name}</Tag>
@@ -294,7 +294,9 @@ const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
           <Card title="Company Information" className="shadow-sm">
             <Descriptions column={1} size="middle">
               <Descriptions.Item label="Company Name">
-                <Text strong className="text-gray-900">{sale.company.name}</Text>
+                <Text strong className="text-gray-900">
+                  {sale.company.name}
+                </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Company ID">
                 <Text type="secondary">#{sale.company.id}</Text>
@@ -312,7 +314,9 @@ const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
                       {sale.dealer.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <Text strong className="text-gray-900">{sale.dealer.name}</Text>
+                  <Text strong className="text-gray-900">
+                    {sale.dealer.name}
+                  </Text>
                 </div>
               </Descriptions.Item>
               <Descriptions.Item label="Email">
@@ -323,8 +327,12 @@ const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
               </Descriptions.Item>
               <Descriptions.Item label="Location">
                 <div>
-                  <div className="font-medium text-gray-900">{sale.dealer.zone.city.name}</div>
-                  <div className="text-sm text-gray-500">{sale.dealer.zone.name}</div>
+                  <div className="font-medium text-gray-900">
+                    {sale.dealer.zone.city.name}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {sale.dealer.zone.name}
+                  </div>
                 </div>
               </Descriptions.Item>
               <Descriptions.Item label="Address">
@@ -342,23 +350,33 @@ const ViewSalePage: React.FC<ViewSalePageProps> = ({ params }) => {
           <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-2xl font-bold text-green-600">{sale.quantity}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {sale.quantity}
+                </div>
                 <div className="text-sm text-gray-600">Units Sold</div>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-lg font-bold text-blue-600">{sale.product.name}</div>
+                <div className="text-lg font-bold text-blue-600">
+                  {sale.product.name}
+                </div>
                 <div className="text-sm text-gray-600">Product</div>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-lg font-bold text-orange-600">{sale.dealer.name}</div>
+                <div className="text-lg font-bold text-orange-600">
+                  {sale.dealer.name}
+                </div>
                 <div className="text-sm text-gray-600">Dealer</div>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-lg font-bold text-purple-600">{sale.batch_number}</div>
+                <div className="text-lg font-bold text-purple-600">
+                  {sale.batch_number}
+                </div>
                 <div className="text-sm text-gray-600">Batch</div>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-lg font-bold text-indigo-600">{sale.warranty_till}</div>
+                <div className="text-lg font-bold text-indigo-600">
+                  {sale.warranty_till}
+                </div>
                 <div className="text-sm text-gray-600">Warranty Days</div>
               </div>
             </div>

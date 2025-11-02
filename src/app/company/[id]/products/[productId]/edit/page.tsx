@@ -228,7 +228,7 @@ const EditProductPage = () => {
     mutationFn: (input: any) => updateProductApi(productId, input),
     onSuccess: () => {
       toast.success("Product updated successfully!");
-      router.push(`/admin/companies/${companyId}/products`);
+      router.push(`/company/${companyId}/products`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to update product: ${error.message}`);
@@ -309,7 +309,7 @@ const EditProductPage = () => {
 
 
   const handleCancel = () => {
-    router.push(`/admin/companies/${companyId}/products`);
+    router.push(`/company/${companyId}/products`);
   };
 
   if (isProductLoading || isCategoriesLoading || isSubcategoriesLoading) {

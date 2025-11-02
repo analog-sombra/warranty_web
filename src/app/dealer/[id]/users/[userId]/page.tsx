@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { Button, Typography, Spin, Card, Descriptions, Tag } from "antd";
+import { getCookie } from "cookies-next";
 
 const { Title, Text } = Typography;
 
@@ -84,11 +85,12 @@ interface UserDetailsPageProps {
   }>;
 }
 
-const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
+const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = () => {
   const router = useRouter();
-  const unwrappedParams = React.use(params) as { id: string; userId: string };
-  const dealerId = parseInt(unwrappedParams.id);
-  const userId = parseInt(unwrappedParams.userId);
+  const params = useParams();
+
+  const dealerId = parseInt(params.id as string);
+  const userId: number = parseInt(getCookie("id") as string);
 
   const {
     data: userData,
@@ -102,19 +104,19 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
   });
 
   const handleBack = () => {
-    router.push(`/admin/dealers/${dealerId}/users`);
+    router.push(`/dealer/${dealerId}/users`);
   };
 
   const handleEdit = () => {
-    router.push(`/admin/dealers/${dealerId}/users/${userId}/edit`);
+    router.push(`/dealer/${dealerId}/users/${userId}/edit`);
   };
 
   const getRoleColor = (role: string) => {
     const roleColors = {
-      "DEALER_ADMIN": "purple",
-      "DEALER_ACCOUNTS": "green",
-      "DEALER_MANAGER": "blue",
-      "DEALER_SALES": "orange",
+      DEALER_ADMIN: "purple",
+      DEALER_ACCOUNTS: "green",
+      DEALER_MANAGER: "blue",
+      DEALER_SALES: "orange",
     };
     return roleColors[role as keyof typeof roleColors] || "gray";
   };
@@ -129,9 +131,13 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
         <Card className="w-full max-w-md">
           <div className="text-center py-8">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">User Not Found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              User Not Found
+            </h3>
             <p className="text-gray-500 mb-4">
-              {error instanceof Error ? error.message : "The requested user could not be found."}
+              {error instanceof Error
+                ? error.message
+                : "The requested user could not be found."}
             </p>
             <Button type="primary" onClick={handleBack}>
               Back to Users
@@ -159,7 +165,11 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
         {/* Header */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <Button type="text" onClick={handleBack} className="hover:bg-gray-100 transition">
+            <Button
+              type="text"
+              onClick={handleBack}
+              className="hover:bg-gray-100 transition"
+            >
               ← Back
             </Button>
             <div className="flex-shrink-0 h-14 w-14 bg-orange-100 rounded-full flex items-center justify-center">
@@ -172,7 +182,8 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
                 {userData?.name}
               </Title>
               <p className="text-gray-600 text-sm">
-                User ID: {userData?.id} • {getRoleDisplayName(userData?.role || "")}
+                User ID: {userData?.id} •{" "}
+                {getRoleDisplayName(userData?.role || "")}
               </p>
             </div>
           </div>
@@ -212,7 +223,9 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                <span className="text-lg font-semibold text-orange-700">Personal Information</span>
+                <span className="text-lg font-semibold text-orange-700">
+                  Personal Information
+                </span>
               </div>
             }
             className="shadow-sm border-orange-100"
@@ -224,7 +237,9 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Primary Contact">
-                <Text className="text-gray-700 font-medium">{userData?.contact1}</Text>
+                <Text className="text-gray-700 font-medium">
+                  {userData?.contact1}
+                </Text>
               </Descriptions.Item>
               {userData?.contact2 && (
                 <Descriptions.Item label="Secondary Contact">
@@ -233,24 +248,29 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
               )}
               <Descriptions.Item label="Email">
                 <Text className="text-gray-700">
-                  {userData?.email || <span className="text-gray-400">Not provided</span>}
+                  {userData?.email || (
+                    <span className="text-gray-400">Not provided</span>
+                  )}
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Date of Birth">
                 <Text className="text-gray-700">
-                  {userData?.dob 
-                    ? new Date(userData.dob).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : <span className="text-gray-400">Not provided</span>
-                  }
+                  {userData?.dob ? (
+                    new Date(userData.dob).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  ) : (
+                    <span className="text-gray-400">Not provided</span>
+                  )}
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Address">
                 <Text className="text-gray-700">
-                  {userData?.address || <span className="text-gray-400">Not provided</span>}
+                  {userData?.address || (
+                    <span className="text-gray-400">Not provided</span>
+                  )}
                 </Text>
               </Descriptions.Item>
             </Descriptions>
@@ -273,7 +293,9 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
                     d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 00-2 2H8a2 2 0 00-2-2V6m8 0h2a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h2"
                   />
                 </svg>
-                <span className="font-semibold text-purple-700">Role & Location</span>
+                <span className="font-semibold text-purple-700">
+                  Role & Location
+                </span>
               </div>
             }
             className="shadow-sm border-purple-100"
@@ -288,12 +310,16 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
                   {getRoleDisplayName(userData?.role || "")}
                 </Tag>
               </div>
-              
+
               <div>
-                <Text className="text-gray-500 text-sm block mb-2">User Type</Text>
+                <Text className="text-gray-500 text-sm block mb-2">
+                  User Type
+                </Text>
                 <div className="flex gap-2">
                   <Tag color={userData?.is_manufacturer ? "blue" : "default"}>
-                    {userData?.is_manufacturer ? "✓ Manufacturer" : "✗ Not Manufacturer"}
+                    {userData?.is_manufacturer
+                      ? "✓ Manufacturer"
+                      : "✗ Not Manufacturer"}
                   </Tag>
                   <Tag color={userData?.is_dealer ? "orange" : "default"}>
                     {userData?.is_dealer ? "✓ Dealer" : "✗ Not Dealer"}
@@ -303,7 +329,9 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
 
               {userData?.zone && (
                 <div>
-                  <Text className="text-gray-500 text-sm block mb-2">Location</Text>
+                  <Text className="text-gray-500 text-sm block mb-2">
+                    Location
+                  </Text>
                   <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <svg
@@ -341,25 +369,35 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                 {userData?.createdAt && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <Text className="text-orange-600 text-sm font-medium block mb-1">Created Date</Text>
+                    <Text className="text-orange-600 text-sm font-medium block mb-1">
+                      Created Date
+                    </Text>
                     <Text strong className="text-orange-900">
-                      {new Date(userData.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(userData.createdAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
                     </Text>
                   </div>
                 )}
                 {userData?.updatedAt && (
                   <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <Text className="text-purple-600 text-sm font-medium block mb-1">Last Updated</Text>
+                    <Text className="text-purple-600 text-sm font-medium block mb-1">
+                      Last Updated
+                    </Text>
                     <Text strong className="text-purple-900">
-                      {new Date(userData.updatedAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(userData.updatedAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
                     </Text>
                   </div>
                 )}
@@ -385,7 +423,9 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <span className="font-semibold text-blue-700">System Information</span>
+              <span className="font-semibold text-blue-700">
+                System Information
+              </span>
             </div>
           }
           className="shadow-sm border-blue-100"
@@ -393,15 +433,21 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center p-4 bg-orange-50 rounded-lg">
               <div className="text-2xl text-orange-600 mb-2">🆔</div>
-              <Text className="text-orange-600 text-sm font-medium block mb-1">User ID</Text>
-              <Text strong className="text-orange-900 text-lg">{userData?.id}</Text>
+              <Text className="text-orange-600 text-sm font-medium block mb-1">
+                User ID
+              </Text>
+              <Text strong className="text-orange-900 text-lg">
+                {userData?.id}
+              </Text>
             </div>
-            
+
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="text-2xl text-green-600 mb-2">
                 {userData?.status === "ACTIVE" ? "✅" : "❌"}
               </div>
-              <Text className="text-green-600 text-sm font-medium block mb-1">Account Status</Text>
+              <Text className="text-green-600 text-sm font-medium block mb-1">
+                Account Status
+              </Text>
               <Tag
                 color={userData?.status === "ACTIVE" ? "green" : "red"}
                 className="text-base px-3 py-1"
@@ -409,11 +455,15 @@ const DealerUserDetailsPage: React.FC<UserDetailsPageProps> = ({ params }) => {
                 {userData?.status}
               </Tag>
             </div>
-            
+
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <div className="text-2xl text-purple-600 mb-2">🏪</div>
-              <Text className="text-purple-600 text-sm font-medium block mb-1">Dealer ID</Text>
-              <Text strong className="text-purple-900 text-lg">{dealerId}</Text>
+              <Text className="text-purple-600 text-sm font-medium block mb-1">
+                Dealer ID
+              </Text>
+              <Text strong className="text-purple-900 text-lg">
+                {dealerId}
+              </Text>
             </div>
           </div>
         </Card>

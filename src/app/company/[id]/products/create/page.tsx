@@ -182,7 +182,7 @@ const CreateProductPage = () => {
     mutationFn: createProductApi,
     onSuccess: (data) => {
       toast.success("Product created successfully!");
-      router.push(`/admin/companies/${companyId}/products`);
+      router.push(`/company/${companyId}/products`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to create product: ${error.message}`);
@@ -217,7 +217,7 @@ const CreateProductPage = () => {
   };
 
   const handleCancel = () => {
-    router.push(`/admin/companies/${companyId}/products`);
+    router.push(`/company/${companyId}/products`);
   };
 
   return (
@@ -375,6 +375,7 @@ const CreateProductPage = () => {
                         placeholder="0"
                         onlynumber={true}
                       />
+                      <div></div>
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex items-start gap-3">
                           <svg
