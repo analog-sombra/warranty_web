@@ -303,7 +303,7 @@ const CategoriesPage = () => {
   const columnHelper = createColumnHelper<Category>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Category, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
+  const columns = useMemo<ColumnDef<Category, any>[]>( 
     () => [
       columnHelper.accessor("id", {
         header: "ID",

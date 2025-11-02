@@ -20,6 +20,8 @@ import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 import {
   SearchOutlined,
@@ -338,7 +340,7 @@ const SubcategoriesPage = () => {
   const columnHelper = createColumnHelper<Subcategory>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Subcategory, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
+  const columns = useMemo<ColumnDef<Subcategory, any>[]>( 
     () => [
       columnHelper.accessor("id", {
         header: "ID",

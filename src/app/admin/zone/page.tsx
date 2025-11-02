@@ -6,6 +6,9 @@ import { Input, Pagination } from "antd";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
 
 const Zone = () => {
   const [pagination, setPaginatin] = useState<{

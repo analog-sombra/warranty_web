@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -29,6 +29,8 @@ import {
   EyeOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -165,7 +167,7 @@ const updateDealerStatusApi = async (
   return response.data.updateCompany;
 };
 
-const DealersPage = () => {
+const DealersPageComponent = () => {
   // Router for navigation
   const router = useRouter();
 
@@ -204,6 +206,7 @@ const DealersPage = () => {
     queryKey: ["dealers", searchInput],
     queryFn: () => fetchDealers(searchInput),
     placeholderData: (previousData) => previousData,
+    enabled: typeof window !== 'undefined', // Only run on client side
   });
 
   // Delete mutation
@@ -246,7 +249,7 @@ const DealersPage = () => {
   const columnHelper = createColumnHelper<Dealer>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Dealer, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
+  const columns = useMemo<ColumnDef<Dealer, any>[]>( 
     () => [
       columnHelper.accessor("id", {
         header: "ID",
@@ -422,42 +425,52 @@ const DealersPage = () => {
 
   // Handle delete action
   const handleDelete = (dealer: Dealer) => {
-    const userId = getCookie("id");
+    try {
+      const userId = getCookie("id");
 
-    if (!userId) {
-      toast.error("User not authenticated. Please login again.");
-      return;
+      if (!userId) {
+        toast.error("User not authenticated. Please login again.");
+        return;
+      }
+
+      setDealerToDelete(dealer);
+      setIsDeleteModalOpen(true);
+    } catch (error) {
+      toast.error("Authentication error. Please login again.");
+      console.error("Error accessing user ID:", error);
     }
-
-    setDealerToDelete(dealer);
-    setIsDeleteModalOpen(true);
   };
 
   // Handle confirm delete
   const handleConfirmDelete = () => {
     if (!dealerToDelete) return;
 
-    const userId = getCookie("id");
-    if (!userId) {
-      toast.error("User not authenticated. Please login again.");
-      return;
-    }
-
-    deleteMutation.mutate(
-      {
-        dealerId: dealerToDelete.id,
-        userId: parseInt(userId.toString()),
-      },
-      {
-        onSuccess: () => {
-          setIsDeleteModalOpen(false);
-          setDealerToDelete(null);
-        },
-        onError: () => {
-          // Keep modal open on error so user can retry
-        },
+    try {
+      const userId = getCookie("id");
+      if (!userId) {
+        toast.error("User not authenticated. Please login again.");
+        return;
       }
-    );
+
+      deleteMutation.mutate(
+        {
+          dealerId: dealerToDelete.id,
+          userId: parseInt(userId.toString()),
+        },
+        {
+          onSuccess: () => {
+            setIsDeleteModalOpen(false);
+            setDealerToDelete(null);
+          },
+          onError: () => {
+            // Keep modal open on error so user can retry
+          },
+        }
+      );
+    } catch (error) {
+      toast.error("Authentication error. Please login again.");
+      console.error("Error accessing user ID:", error);
+    }
   };
 
   // Handle cancel delete
@@ -468,45 +481,55 @@ const DealersPage = () => {
 
   // Handle status toggle
   const handleStatusToggle = (dealer: Dealer) => {
-    const userId = getCookie("id");
+    try {
+      const userId = getCookie("id");
 
-    if (!userId) {
-      toast.error("User not authenticated. Please login again.");
-      return;
+      if (!userId) {
+        toast.error("User not authenticated. Please login again.");
+        return;
+      }
+
+      setDealerToUpdateStatus(dealer);
+      setIsStatusModalOpen(true);
+    } catch (error) {
+      toast.error("Authentication error. Please login again.");
+      console.error("Error accessing user ID:", error);
     }
-
-    setDealerToUpdateStatus(dealer);
-    setIsStatusModalOpen(true);
   };
 
   // Handle confirm status update
   const handleConfirmStatusUpdate = () => {
     if (!dealerToUpdateStatus) return;
 
-    const userId = getCookie("id");
-    if (!userId) {
-      toast.error("User not authenticated. Please login again.");
-      return;
-    }
-
-    const newStatus = dealerToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-
-    statusUpdateMutation.mutate(
-      {
-        dealerId: dealerToUpdateStatus.id,
-        status: newStatus,
-        updatedById: parseInt(userId.toString()),
-      },
-      {
-        onSuccess: () => {
-          setIsStatusModalOpen(false);
-          setDealerToUpdateStatus(null);
-        },
-        onError: () => {
-          // Keep modal open on error so user can retry
-        },
+    try {
+      const userId = getCookie("id");
+      if (!userId) {
+        toast.error("User not authenticated. Please login again.");
+        return;
       }
-    );
+
+      const newStatus = dealerToUpdateStatus.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+
+      statusUpdateMutation.mutate(
+        {
+          dealerId: dealerToUpdateStatus.id,
+          status: newStatus,
+          updatedById: parseInt(userId.toString()),
+        },
+        {
+          onSuccess: () => {
+            setIsStatusModalOpen(false);
+            setDealerToUpdateStatus(null);
+          },
+          onError: () => {
+            // Keep modal open on error so user can retry
+          },
+        }
+      );
+    } catch (error) {
+      toast.error("Authentication error. Please login again.");
+      console.error("Error accessing user ID:", error);
+    }
   };
 
   // Handle cancel status update
@@ -972,4 +995,4 @@ const DealersPage = () => {
   );
 };
 
-export default DealersPage;
+export default DealersPageComponent;

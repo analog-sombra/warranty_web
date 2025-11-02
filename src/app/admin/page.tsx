@@ -10,7 +10,7 @@ import {
   SolarBellBold,
 } from "@/components/icons";
 import { Select, Modal, Input, Button } from "antd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiCall } from "@/services/api";
 import { getCookie } from "cookies-next";
@@ -18,6 +18,7 @@ import { getCookie } from "cookies-next";
 import { Chart as ChartJS, registerables } from "chart.js";
 import Link from "next/link";
 import { toast } from "react-toastify";
+
 ChartJS.register(...registerables);
 
 // GraphQL mutations and queries
@@ -115,10 +116,12 @@ const fetchCategoriesApi = async (): Promise<Category[]> => {
   return response.data.getAllProductCategory;
 };
 
-const Dashboard = () => {
+const DashboardComponent = () => {
+  // Prevent SSR issues
   const [year, setYear] = useState(new Date().getFullYear());
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
+
   const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
   const [subcategoryName, setSubcategoryName] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<
@@ -134,6 +137,7 @@ const Dashboard = () => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategoriesApi,
+    enabled: typeof window !== "undefined", // Only run on client side
   });
 
   // Create category mutation
@@ -181,22 +185,27 @@ const Dashboard = () => {
 
   // Handle category creation
   const handleCreateCategory = () => {
-    const userId = getCookie("id");
+    try {
+      const userId = getCookie("id");
 
-    if (!userId) {
-      toast.error("User not authenticated. Please login again.");
-      return;
+      if (!userId) {
+        toast.error("User not authenticated. Please login again.");
+        return;
+      }
+
+      if (!categoryName.trim()) {
+        toast.error("Please enter a category name.");
+        return;
+      }
+
+      createCategoryMutation.mutate({
+        name: categoryName.trim(),
+        createdById: parseInt(userId.toString()),
+      });
+    } catch (error) {
+      toast.error("Authentication error. Please login again.");
+      console.error("Error accessing user ID:", error);
     }
-
-    if (!categoryName.trim()) {
-      toast.error("Please enter a category name.");
-      return;
-    }
-
-    createCategoryMutation.mutate({
-      name: categoryName.trim(),
-      createdById: parseInt(userId.toString()),
-    });
   };
 
   // Handle cancel
@@ -212,28 +221,33 @@ const Dashboard = () => {
 
   // Handle subcategory creation
   const handleCreateSubcategory = () => {
-    const userId = getCookie("id");
+    try {
+      const userId = getCookie("id");
 
-    if (!userId) {
-      toast.error("User not authenticated. Please login again.");
-      return;
+      if (!userId) {
+        toast.error("User not authenticated. Please login again.");
+        return;
+      }
+
+      if (!subcategoryName.trim()) {
+        toast.error("Please enter a subcategory name.");
+        return;
+      }
+
+      if (!selectedCategoryId) {
+        toast.error("Please select a parent category.");
+        return;
+      }
+
+      createSubcategoryMutation.mutate({
+        name: subcategoryName.trim(),
+        productCategoryId: selectedCategoryId,
+        createdById: parseInt(userId.toString()),
+      });
+    } catch (error) {
+      toast.error("Authentication error. Please login again.");
+      console.error("Error accessing user ID:", error);
     }
-
-    if (!subcategoryName.trim()) {
-      toast.error("Please enter a subcategory name.");
-      return;
-    }
-
-    if (!selectedCategoryId) {
-      toast.error("Please select a parent category.");
-      return;
-    }
-
-    createSubcategoryMutation.mutate({
-      name: subcategoryName.trim(),
-      productCategoryId: selectedCategoryId,
-      createdById: parseInt(userId.toString()),
-    });
   };
 
   // Handle cancel subcategory
@@ -418,15 +432,16 @@ const Dashboard = () => {
                 </h3>
               </div>
               <div className="grid grid-cols-1 gap-2">
-                <Button
-                  onClick={() => (window.location.href = "/admin/addcompany")}
+                <Link
+                  // onClick={() => (window.location.href = "/admin/addcompany")}
+                  href="/admin/addcompany"
                   className="w-full h-auto p-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg text-center transition-all duration-200 border border-blue-200 transform hover:scale-105"
                   type="text"
                 >
                   <span className="text-blue-700 font-medium text-sm">
                     Add Company
                   </span>
-                </Button>
+                </Link>
                 <Button
                   onClick={handleAddCategoryClick}
                   className="w-full h-auto p-3 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 rounded-lg text-center transition-all duration-200 border border-emerald-200 transform hover:scale-105"
@@ -741,4 +756,4 @@ const ActivityCard = ({
   );
 };
 
-export default Dashboard;
+export default DashboardComponent;

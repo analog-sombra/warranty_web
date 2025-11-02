@@ -260,7 +260,7 @@ const CompaniesPage = () => {
   const columnHelper = createColumnHelper<Company>();
 
   // Define columns
-  const columns = useMemo<ColumnDef<Company, any>[]>( // eslint-disable-line @typescript-eslint/no-explicit-any
+  const columns = useMemo<ColumnDef<Company, any>[]>( 
     () => [
       columnHelper.accessor("id", {
         header: "ID",

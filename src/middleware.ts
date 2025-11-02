@@ -55,19 +55,17 @@ export function middleware(request: NextRequest) {
     return !!role && Object.values(ROLES).includes(role as UserRole);
   };
 
-  if(!isAuthenticated && loginRoutes.includes(pathname)) {
+  if (!isAuthenticated && loginRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 
   // If not authenticated, redirect to appropriate login page
   if (!isAuthenticated) {
-    console.log("User not authenticated, redirecting to login");
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // If authenticated but role is invalid, redirect to login
   if (!isValidRole(role)) {
-    console.log("Invalid role detected, redirecting to login");
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -100,7 +98,6 @@ export function middleware(request: NextRequest) {
 
   // If user is trying to access an unauthorized route, redirect to their appropriate page
   if (expectedRoute) {
-    console.log(`Redirecting ${role} from ${pathname} to ${expectedRoute}`);
     return NextResponse.redirect(new URL(expectedRoute, request.url));
   }
 
