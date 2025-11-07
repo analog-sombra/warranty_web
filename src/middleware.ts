@@ -91,10 +91,17 @@ export function middleware(request: NextRequest) {
   // Get the expected route for the user's role
   const expectedRoute = roleRoutes[role as UserRole];
 
+  console.log(
+    `User ID: ${id}, Role: ${role}, Pathname: ${pathname}, Expected Route: ${expectedRoute}`
+  );
   // Check if user is trying to access a route they're authorized for
   if (expectedRoute && pathname.startsWith(expectedRoute)) {
     return NextResponse.next();
   }
+
+  console.log(
+    `Unauthorized access attempt by User ID: ${id}, Role: ${role}, Pathname: ${pathname}`
+  );
 
   // If user is trying to access an unauthorized route, redirect to their appropriate page
   if (expectedRoute) {

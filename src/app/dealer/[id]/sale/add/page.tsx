@@ -85,6 +85,7 @@ interface DealerStock {
   product: {
     id: number;
     name: string;
+    company_id: number;
   };
 }
 
@@ -114,6 +115,7 @@ const GET_DEALER_PRODUCTS = `
       product {
         id
         name
+        company_id
       }
     }
   }
@@ -422,7 +424,7 @@ const AddCustomerSalePage: React.FC<AddCustomerSalePageProps> = () => {
 
       // Create the customer sale (using dealer_id as company_id for now)
       const saleData: CreateCustomerSaleInput = {
-        company_id: dealerId, // Using dealer_id as company_id since product.company_id is not available
+        company_id: selectedStock.product.company_id,
         createdById: parseInt(userId.toString()),
         customer_id: selectedCustomer.id,
         product_id: parseInt(data.product_id),

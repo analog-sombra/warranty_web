@@ -30,6 +30,7 @@
     "react-hook-form": "^7.62.0",
     "react-switch": "^7.1.0",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.3.0",
     "valibot": "^1.1.0"
   },
   "devDependencies": {

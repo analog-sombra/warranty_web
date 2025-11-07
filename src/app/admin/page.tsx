@@ -433,7 +433,6 @@ const DashboardComponent = () => {
               </div>
               <div className="grid grid-cols-1 gap-2">
                 <Link
-                  // onClick={() => (window.location.href = "/admin/addcompany")}
                   href="/admin/addcompany"
                   className="w-full h-auto p-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg text-center transition-all duration-200 border border-blue-200 transform hover:scale-105"
                   type="text"

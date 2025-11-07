@@ -375,6 +375,7 @@ const CreateProductPage = () => {
                         placeholder="0"
                         onlynumber={true}
                       />
+                      <div></div>
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex items-start gap-3">
                           <svg
@@ -439,7 +440,7 @@ const CreateProductPage = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 justify-end pt-6 border-t border-gray-200">
+              <div className="flex gap-4 justify-end">
                 <Button
                   type="default"
                   size="large"

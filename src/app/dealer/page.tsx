@@ -18,6 +18,7 @@ import { getCookie } from "cookies-next";
 import { Chart as ChartJS, registerables } from "chart.js";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 ChartJS.register(...registerables);
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -118,6 +119,7 @@ const fetchCategoriesApi = async (): Promise<Category[]> => {
 };
 
 const DealerDashboard = () => {
+  const router = useRouter();
   const [year, setYear] = useState(new Date().getFullYear());
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
@@ -421,7 +423,9 @@ const DealerDashboard = () => {
               </div>
               <div className="grid grid-cols-1 gap-2">
                 <Button
-                  onClick={() => (window.location.href = "/admin/addcompany")}
+                  onClick={() => {
+                    router.push("/admin/addcompany");
+                  }}
                   className="w-full h-auto p-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg text-center transition-all duration-200 border border-blue-200 transform hover:scale-105"
                   type="text"
                 >

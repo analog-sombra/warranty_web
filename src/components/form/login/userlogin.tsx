@@ -125,7 +125,7 @@ const UserLoginPage = () => {
       setCookie("role", data.role);
       setCookie("id", data.id);
       toast.success("Login successful!");
-      router.push("/customer");
+      router.push(`/customer/${data.id}`);
     },
     onError: (error: Error) => {
       toast.error(error.message);

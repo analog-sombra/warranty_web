@@ -128,7 +128,6 @@ const DealerSalesPage: React.FC<DealerSalesPageProps> = () => {
   const router = useRouter();
   const params = useParams();
   const companyId = parseInt(params.id as string);
-  console.log("Company ID:", companyId);
 
   // State management
   const [globalFilter, setGlobalFilter] = useState("");

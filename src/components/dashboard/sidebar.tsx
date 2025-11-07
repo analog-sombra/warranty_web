@@ -1,16 +1,12 @@
 "use client";
 
 import {
-  FluentBuildingShop16Regular,
   FluentBuildingSkyscraper24Regular,
-  FluentDocumentBulletList16Regular,
-  FluentMdl2ViewDashboard,
   FluentShieldAdd48Filled,
-  IcBaselineAttractions,
   MaterialSymbolsLogout,
   MaterialSymbolsPersonRounded,
+  MaterialSymbolsSupportAgent,
   Fa6RegularBuilding,
-  AntDesignShopOutlined,
   ClarityBlocksGroupLine,
   Fa6RegularRectangleList,
   IcOutlineInsertChart,
@@ -56,6 +52,7 @@ const Sidebar = (props: SidebarProps) => {
   const router = useRouter();
 
   const companyId: number = parseInt(getCookie("company")?.toString() || "0");
+  const userId: number = parseInt(getCookie("id")?.toString() || "0");
 
   const roleRoutes: Record<UserRole, string> = {
     SYSTEM: "/admin",
@@ -90,7 +87,9 @@ const Sidebar = (props: SidebarProps) => {
                 <FluentShieldAdd48Filled className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="font-bold text-gray-900 text-lg">Warranty Smart</h2>
+                <h2 className="font-bold text-gray-900 text-lg">
+                  Warranty Smart
+                </h2>
                 <p className="text-xs text-gray-500">Management System</p>
               </div>
             </div>
@@ -98,16 +97,19 @@ const Sidebar = (props: SidebarProps) => {
 
           {/* Navigation Menu */}
           <nav className="flex-1 p-2">
-            <MenuTab
-              name="Dashboard"
-              path={path}
-              pathcheck={roleRoutes[props.role as UserRole]}
-              click={() => props.setIsOpen(false)}
-              icon={<FluentMdl2Home className="w-5 h-5" />}
-              iconColor="text-blue-600"
-              gradientFrom="from-blue-500"
-              gradientTo="to-blue-600"
-            />
+            {!["USER"].includes(props.role) && (
+              <MenuTab
+                name="Dashboard"
+                path={path}
+                pathcheck={roleRoutes[props.role as UserRole]}
+                click={() => props.setIsOpen(false)}
+                icon={<FluentMdl2Home className="w-5 h-5" />}
+                iconColor="text-blue-600"
+                gradientFrom="from-blue-500"
+                gradientTo="to-blue-600"
+              />
+            )}
+
             {["SYSTEM", "ADMIN"].includes(props.role) && (
               <>
                 <MenuTab
@@ -155,7 +157,9 @@ const Sidebar = (props: SidebarProps) => {
                   path={path}
                   pathcheck="/admin/products"
                   click={() => props.setIsOpen(false)}
-                  icon={<FluentBuildingSkyscraper24Regular className="w-5 h-5" />}
+                  icon={
+                    <FluentBuildingSkyscraper24Regular className="w-5 h-5" />
+                  }
                   iconColor="text-teal-600"
                   gradientFrom="from-teal-500"
                   gradientTo="to-teal-600"
@@ -216,7 +220,9 @@ const Sidebar = (props: SidebarProps) => {
                   path={path}
                   pathcheck={`/company/${companyId}/products`}
                   click={() => props.setIsOpen(false)}
-                  icon={<FluentBuildingSkyscraper24Regular className="w-5 h-5" />}
+                  icon={
+                    <FluentBuildingSkyscraper24Regular className="w-5 h-5" />
+                  }
                   iconColor="text-green-600"
                   gradientFrom="from-green-500"
                   gradientTo="to-green-600"
@@ -224,7 +230,7 @@ const Sidebar = (props: SidebarProps) => {
                 <MenuTab
                   name="Claims"
                   path={path}
-                  pathcheck={`/company/${companyId}/claims`}
+                  pathcheck={`/company/claims`}
                   click={() => props.setIsOpen(false)}
                   icon={<IcOutlineReceiptLong className="w-5 h-5" />}
                   iconColor="text-amber-600"
@@ -250,6 +256,16 @@ const Sidebar = (props: SidebarProps) => {
                   iconColor="text-blue-600"
                   gradientFrom="from-blue-500"
                   gradientTo="to-blue-600"
+                />
+                <MenuTab
+                  name="Reports"
+                  path={path}
+                  pathcheck={`/company/reports`}
+                  click={() => props.setIsOpen(false)}
+                  icon={<IcOutlineInsertChart className="w-5 h-5" />}
+                  iconColor="text-indigo-600"
+                  gradientFrom="from-indigo-500"
+                  gradientTo="to-indigo-600"
                 />
               </>
             )}
@@ -299,6 +315,42 @@ const Sidebar = (props: SidebarProps) => {
                   iconColor="text-purple-600"
                   gradientFrom="from-purple-500"
                   gradientTo="to-purple-600"
+                />
+              </>
+            )}
+            {["USER"].includes(props.role) && (
+              <>
+                <MenuTab
+                  name="My Profile"
+                  path={path}
+                  pathcheck={`/customer`}
+                  click={() => props.setIsOpen(false)}
+                  icon={<Fa6RegularBuilding className="w-5 h-5" />}
+                  iconColor="text-emerald-600"
+                  gradientFrom="from-emerald-500"
+                  gradientTo="to-emerald-600"
+                />
+                <MenuTab
+                  name="Products"
+                  path={path}
+                  pathcheck={`/customer/products`}
+                  click={() => props.setIsOpen(false)}
+                  icon={
+                    <FluentBuildingSkyscraper24Regular className="w-5 h-5" />
+                  }
+                  iconColor="text-teal-600"
+                  gradientFrom="from-teal-500"
+                  gradientTo="to-teal-600"
+                />
+                <MenuTab
+                  name="Claims"
+                  path={path}
+                  pathcheck={`/customer/claim`}
+                  click={() => props.setIsOpen(false)}
+                  icon={<MaterialSymbolsSupportAgent className="w-5 h-5" />}
+                  iconColor="text-indigo-600"
+                  gradientFrom="from-indigo-500"
+                  gradientTo="to-indigo-600"
                 />
               </>
             )}
